@@ -17,7 +17,7 @@ class MafiaGame:
         all_possible_worlds = [list(per) for per in set(permutations(atoms))]
         for i in range(len(all_possible_worlds)):
             for j in range(len(all_possible_worlds[i])):
-                all_possible_worlds[i][j] = all_possible_worlds[i][j] + str(j)
+                all_possible_worlds[i][j] = str(j) + ":" + all_possible_worlds[i][j] 
         print(all_possible_worlds)
         pass
 
