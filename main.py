@@ -1,8 +1,8 @@
-import MafiaGame
+from MafiaGame import MafiaGame
 
 
 def main():
-   mafiaGame = MafiaGame()
+   mafiaGame = MafiaGame(2,2,2)
    mafiaGame.start()
    
 if __name__ == '__main__':
