@@ -1,7 +1,6 @@
 from mlsolver.kripke import World, KripkeStructure
 from itertools import permutations
 
-
 class MafiaGame:
     def __init__(self, n_villagers, n_mafia, n_detective):
         self.init_kripke_model(n_villagers, n_mafia, n_detective)

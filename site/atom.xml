@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>Simulating the Mafia game</title>
+ <link href="/atom.xml" rel="self"/>
+ <link href="/"/>
+ <updated>2023-06-12T23:09:53+02:00</updated>
+ <id></id>
+ <author>
+   <name></name>
+   <email></email>
+ </author>
+
+ 
+ <entry>
+   <title>Overview of the model</title>
+   <link href="/2020/04/01/whats-jekyll/"/>
+   <updated>2020-04-01T00:00:00+02:00</updated>
+   <id>/2020/04/01/whats-jekyll</id>
+   <content type="html">&lt;h1 id=&quot;players&quot;&gt;Players&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;A set of &lt;em&gt;n&lt;/em&gt; agents
+&lt;em&gt;A&lt;/em&gt; = {&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;1&lt;/sub&gt;, &lt;em&gt;a&lt;/em&gt;&lt;sub&gt;2&lt;/sub&gt;, …, &lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;n&lt;/em&gt;&lt;/sub&gt;}
+containing:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;a set of &lt;em&gt;v&lt;/em&gt; villagers
+&lt;em&gt;V&lt;/em&gt; = {&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; ∈ &lt;em&gt;A&lt;/em&gt; | agent &lt;em&gt;i&lt;/em&gt; is a villager}&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;a set of &lt;em&gt;m&lt;/em&gt; mafia
+&lt;em&gt;V&lt;/em&gt; = {&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; ∈ &lt;em&gt;A&lt;/em&gt; | agent &lt;em&gt;i&lt;/em&gt; is a mafioso}&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;a set of &lt;em&gt;d&lt;/em&gt; detectives
+&lt;em&gt;V&lt;/em&gt; = {&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; ∈ &lt;em&gt;A&lt;/em&gt; | agent &lt;em&gt;i&lt;/em&gt; is a detective}&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Social parameter: each agent has a unique &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; chance of
+talking to another agent during a day phase (with
+0≤&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; ≤ 1)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;During each game, a pre-defined number of players are randomly
+picked from the set of players. By design, these players are assumed
+to act suspiciously and can be observed as being suspicious by
+talking with them.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Every public announcement by players is assumed to be truthful
+(including those by mafia).&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;types-of-knowledge&quot;&gt;Types of knowledge&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Agent &lt;em&gt;i&lt;/em&gt; is a mafioso: &lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Agent &lt;em&gt;i&lt;/em&gt; is a detective: &lt;em&gt;Det&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Agent &lt;em&gt;i&lt;/em&gt; has been killed: &lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Agent &lt;em&gt;i&lt;/em&gt; is acting suspiciously: &lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;reasoning-rules&quot;&gt;Reasoning rules&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Talking with suspicious players: if agent &lt;em&gt;i&lt;/em&gt; talks with agent &lt;em&gt;j&lt;/em&gt;
+and agent &lt;em&gt;j&lt;/em&gt; acts suspiciously, then agent &lt;em&gt;i&lt;/em&gt; knows that agent &lt;em&gt;j&lt;/em&gt;
+is acting suspiciously.&lt;/p&gt;
+
+    &lt;p&gt;(&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; talks with
+&lt;em&gt;a&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt; ∧ &lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;)
+ → &lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Mafia knows who are mafia: if agent &lt;em&gt;i&lt;/em&gt; and &lt;em&gt;j&lt;/em&gt; are both mafia, then
+agent &lt;em&gt;i&lt;/em&gt; knows agent &lt;em&gt;j&lt;/em&gt; is a mafioso.&lt;/p&gt;
+
+    &lt;p&gt;(&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;∧&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;) → &lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Suspicious players possibly being mafia: if agent &lt;em&gt;i&lt;/em&gt; knows that
+agent &lt;em&gt;j&lt;/em&gt; is acting suspiciously, then agent &lt;em&gt;i&lt;/em&gt; considers it to be
+possible that agent &lt;em&gt;j&lt;/em&gt; is a mafioso:&lt;/p&gt;
+
+    &lt;p&gt;&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt; → &lt;em&gt;M&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;simulation-design&quot;&gt;Simulation design&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Parameters:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;the number of villagers &lt;em&gt;v&lt;/em&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;the number of mafia &lt;em&gt;m&lt;/em&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;the number of detective &lt;em&gt;d&lt;/em&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;the number of talking rounds in a day phase &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_talks&lt;/code&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;the probability distribution of values for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; for
+each player&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;the number of non-mafia players that are acting suspiciously
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_sus&lt;/code&gt; (with 0≤ &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_sus&lt;/code&gt;  ≤ (&lt;em&gt;n&lt;/em&gt;−&lt;em&gt;m&lt;/em&gt;))&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Talking rounds:&lt;/p&gt;
+
+    &lt;p&gt;During a talking round, half of the players are randomly picked to
+start talks. Each of these players uses their &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; as the
+probability of whether they want to have a talk during that round.
+If the player does want to talk, they invite another randomly picked
+player to talk with. If the invited player also wants to talk (based
+on their &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt;), the talk between these two players starts.
+Now, the reasoning rules can be applied, such that the knowledge
+base can be extended.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Run of one game of Mafia:&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;
+        &lt;p&gt;Initialization of players:&lt;/p&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;
+            &lt;p&gt;The pool of players is generated: &lt;em&gt;v&lt;/em&gt; villagers, &lt;em&gt;m&lt;/em&gt; mafia
+and &lt;em&gt;d&lt;/em&gt; detectives&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;For each player, the value for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; is generated
+through the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;social_stat&lt;/code&gt; distribution.&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;From the pool of players, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_sus&lt;/code&gt; players are randomly
+picked, such that agent &lt;em&gt;i&lt;/em&gt;&lt;/p&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;Initial day phase: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_talks&lt;/code&gt; talking rounds are done, but no
+voting happens yet.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Night phase&lt;/strong&gt;:&lt;/p&gt;
+
+        &lt;ol&gt;
+          &lt;li&gt;
+            &lt;p&gt;Detectives randomly pick one player (which they have not
+checked out before) and gain the knowledge of whether that
+player is a mafioso: f.e. if agent &lt;em&gt;i&lt;/em&gt; is a detective and
+they check out agent &lt;em&gt;j&lt;/em&gt;, the knowledge extends with
+&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt; (if agent &lt;em&gt;j&lt;/em&gt; is a
+mafioso) or &lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;¬&lt;em&gt;Maf&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt; (if
+agent &lt;em&gt;j&lt;/em&gt; isn’t a mafioso).&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;The mafia generate a list of living players that know that
+they are suspicious (f.e. for each mafioso &lt;em&gt;i&lt;/em&gt;, agent &lt;em&gt;j&lt;/em&gt; is
+added to the list if
+&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; ∧ ¬&lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;).
+From this list, they pick one random player &lt;em&gt;i&lt;/em&gt; to kill,
+thus the knowledge extends with &lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;.
+If the list is empty, a random living non-mafia player is
+picked.&lt;/p&gt;
+          &lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Day phase&lt;/strong&gt;:&lt;/p&gt;
+
+        &lt;ol&gt;
+          &lt;li&gt;
+            &lt;p&gt;&lt;em&gt;Announcement phase&lt;/em&gt;: The player &lt;em&gt;i&lt;/em&gt; who was killed during
+the night phase is publicly announced:
+&lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;.&lt;/p&gt;
+
+            &lt;p&gt;&lt;u&gt;The game ends and is won by the mafia&lt;/u&gt; if there are
+more living mafia than living non-mafia players remaining.&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;&lt;em&gt;Discussion phase&lt;/em&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nr_of_talks&lt;/code&gt; talking rounds are done,
+during which reasoning rules are applied.&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;&lt;em&gt;Voting phase&lt;/em&gt;: Each non-mafia player generates a list of
+living players that they know are suspicious (f.e. for each
+non-mafia player &lt;em&gt;i&lt;/em&gt;, agent &lt;em&gt;j&lt;/em&gt; is added to their list if
+&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt; ∧ ¬&lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;).
+If the player’s list is empty, a random living player added
+to their list. Similarly, each mafioso generates a list of
+living players that know that they are suspicious (f.e. for
+each mafioso &lt;em&gt;i&lt;/em&gt;, agent &lt;em&gt;j&lt;/em&gt; is added to the list if
+&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;K&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;&lt;em&gt;Sus&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt; ∧ ¬&lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;j&lt;/em&gt;&lt;/sub&gt;).
+If the mafioso’s list is empty, a random non-mafia living
+player added to their list.&lt;/p&gt;
+
+            &lt;p&gt;Then, all players pick a random player from their list that
+they want to vote to kill. The player &lt;em&gt;i&lt;/em&gt; with the most
+votes is killed: &lt;em&gt;Dead&lt;/em&gt;&lt;sub&gt;&lt;em&gt;i&lt;/em&gt;&lt;/sub&gt;. If there is a
+tie, a randomly picked player from the tie is killed.&lt;/p&gt;
+
+            &lt;p&gt;&lt;u&gt;The game ends and is won by the mafia&lt;/u&gt; if there are
+more living mafia than living non-mafia players remaining.&lt;/p&gt;
+
+            &lt;p&gt;&lt;u&gt;The game ends and is won by the non-mafia players&lt;/u&gt; if
+all the mafia are killed.&lt;/p&gt;
+          &lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+
+</feed>
