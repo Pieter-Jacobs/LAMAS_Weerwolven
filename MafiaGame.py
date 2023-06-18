@@ -59,7 +59,6 @@ class MafiaGame:
                             world_1_mafia = [i+1 for i, x in enumerate(world.name) if x == "m"]
                             world_2_mafia = [i+1 for i, x in enumerate(world_2.name) if x == "m"]
                             if sorted(world_1_mafia) == sorted(world_2_mafia):
-                                print("same")
                                 agent_relations.append((world.name, world_2.name))
                         else:
                             agent_relations.append((world.name, world_2.name))
@@ -68,7 +67,7 @@ class MafiaGame:
         # Create the Kripke structure
         ks = KripkeStructure(worlds, relations)
         self.visualize_kripke_model(ks, true_world)
-        self.test_initialization(ks)
+        self.make_public_announcement(ks)
         return ks
 
     def visualize_kripke_model(self, kripke_model, true_world):
@@ -142,7 +141,10 @@ class MafiaGame:
 
         return result
 
-    def test_initialization(self, ks):
-        formula = Box_a('agent1', Atom('m3'))
+    def make_public_announcement(self, ks):
+        formula = Box_a("agent1",And(Not(Atom('m1')), Not(Atom('d1'))))
+
         model = ks.solve(formula)
-        self.visualize_kripke_model(model, 'vvmm')
+        self.visualize_kripke_model(model, 'vvmmd')
+
+        
