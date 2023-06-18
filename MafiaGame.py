@@ -20,11 +20,13 @@ class MafiaGame:
         d1: agent 1 is detective
         v1: agent 1 is villager
         """
- 
+
         agents = ['agent' + str(i + 1) for i in range(n_villagers + n_mafia + n_detective)]
 
         # Create all possible combinations of agent roles
         game_roles = ['v'] * n_villagers + ['m'] * n_mafia + ['d'] * n_detective
+        true_world = ':'.join([agent + ':' + role for agent, role in zip(agents, game_roles)])
+
         all_possible_roles = set(permutations(game_roles))
 
         # Create the worlds for the Kripke structure
@@ -32,8 +34,12 @@ class MafiaGame:
         for roles in all_possible_roles:
             world_name = ':'.join([agent + ':' + role for agent, role in zip(agents, roles)])
             world = World(world_name, {})
+            for i, agent in enumerate(agents):
+                mafia_formula = ' ^ '.join([f'(mafia{j} ∨ ¬mafia{j})' for j in range(1, len(agents) + 1) if j != (i + 1)])
+                knowledge_formula = f'K{i + 1}({mafia_formula})'
+                world.assignment[knowledge_formula] = True
             worlds.append(world)
-
+        print(worlds[0])
         # Create the relations dictionary based on the agent's role in each world
         relations = {}
         for i, agent in enumerate(agents):
@@ -49,7 +55,7 @@ class MafiaGame:
 
         # Create the Kripke structure
         ks = KripkeStructure(worlds, relations)
-        self.visualize_kripke_model(ks, worlds[0].name)
+        self.visualize_kripke_model(ks, true_world)
         return ks
     
     def visualize_kripke_model(self, kripke_model, true_world):
