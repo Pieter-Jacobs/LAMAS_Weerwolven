@@ -16,10 +16,11 @@ class MafiaGame:
     
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
         """Builds the initial Kripke model world, where everyone believes everyone can be any role,
-        atom m1: agent 1 is mafia
-        atom d1: agent 1 is detective
-        atom v1: agent 1 is villager
+        m1: agent 1 is mafia
+        d1: agent 1 is detective
+        v1: agent 1 is villager
         """
+ 
         agents = ['agent' + str(i + 1) for i in range(n_villagers + n_mafia + n_detective)]
 
         # Create all possible combinations of agent roles
@@ -48,10 +49,10 @@ class MafiaGame:
 
         # Create the Kripke structure
         ks = KripkeStructure(worlds, relations)
-        self.visualize_kripke_model(ks)
+        self.visualize_kripke_model(ks, worlds[0].name)
         return ks
     
-    def visualize_kripke_model(self, kripke_model):
+    def visualize_kripke_model(self, kripke_model, true_world):
         """Visualizes the Kripke model worlds and relations."""
         # Create an empty directed graph
         graph = nx.DiGraph()
@@ -75,7 +76,11 @@ class MafiaGame:
         pos = nx.spring_layout(graph)
 
         # Draw nodes (worlds)
-        nx.draw_networkx_nodes(graph, pos, node_color='lightblue', node_size=500)
+        node_colors = ['lightblue'] * len(graph.nodes)
+        if true_world in graph.nodes:
+            true_world_index = list(graph.nodes).index(true_world)
+            node_colors[true_world_index] = 'green'
+        nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=500)
 
         # Draw edges (relations)
         nx.draw_networkx_edges(graph, pos, arrowstyle='->', arrowsize=10, edge_color='gray')
