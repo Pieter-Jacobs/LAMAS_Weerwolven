@@ -1,4 +1,5 @@
 from roles.agent import Agent
+import random 
 
 class Villager(Agent):
     def __init__(self):
@@ -13,5 +14,7 @@ class Villager(Agent):
         print("blalbalblaa")
 
     def vote(self, players):
-        return(self)
+        eligible_playes = [p for p in players if p != self]
+        random_player = random.choice(eligible_playes)
+        return random_player
 
