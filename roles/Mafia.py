@@ -1,4 +1,5 @@
 from roles.agent import Agent
+import random
 
 class Mafia(Agent):
     def __init__(self):
@@ -11,5 +12,7 @@ class Mafia(Agent):
         print("blalbalblaa")
 
     def vote(self, players):
-        pass
+        eligible_playes = [p for p in players if p != self]
+        random_player = random.choice(eligible_playes)
+        return random_player
 
