@@ -10,12 +10,13 @@ from phases.day import Day
 from phases.night import Night
 import matplotlib.pyplot as plt
 import networkx as nx
-
+import random
 
 class MafiaGame:
     def __init__(self, n_villagers, n_mafia, n_detective):
+        #self.init_players(n_villagers, n_mafia, n_detective)
         self.init_kripke_model(n_villagers, n_mafia, n_detective)
-        self.init_players(n_villagers, n_mafia, n_detective)
+        
         pass
 
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
@@ -33,15 +34,20 @@ class MafiaGame:
 
         all_possible_roles = set(permutations(game_roles))
 
+        #true_world = random.choice(list(all_possible_roles))
+        #true_world = ''.join(true_world)
+        self.players = self.create_players(true_world)
+        print("True world of this game: ", true_world)
+
         # Create the worlds for the Kripke structure
         worlds = []
         for roles in all_possible_roles:
             world_name = ''.join(roles)
             world = World(world_name, {})
             for i, role in enumerate(roles):
-                if role != 'v':
-                    atom = f'{role}{i + 1}'
-                    world.assignment[atom] = True
+                #if role != 'v':
+                atom = f'{role}{i + 1}'
+                world.assignment[atom] = True
                 
             worlds.append(world)
 
@@ -63,13 +69,82 @@ class MafiaGame:
                         else:
                             agent_relations.append((world.name, world_2.name))
             relations[agent] = set(agent_relations)
-
+        
         # Create the Kripke structure
         ks = KripkeStructure(worlds, relations)
-        self.visualize_kripke_model(ks, true_world)
-        self.make_public_announcement(ks)
-        return ks
+        #self.visualize_kripke_model(ks, true_world)
+        #self.make_public_announcement(ks)
 
+        #Initialise the day & night
+        day = Day(self.players, n_villagers, n_mafia, n_detective)
+        night = Night(self.players, n_villagers, n_mafia, n_detective)
+        
+        #Night phase
+        night.detective_phase() 
+        killed_player = night.mafia_phase()
+        model = self.killed(ks, killed_player)
+        self.visualize_kripke_model(model, true_world)
+
+        if killed_player.role == "d":
+            n_detective -= 1
+        else:
+            n_villagers -= 1
+        self.game_status(n_villagers, n_mafia, n_detective)
+        
+        while True:
+            #Day phase
+            voted_player = day.voting_phase()[0]
+            model = self.removed_by_vote(model, voted_player)
+            #self.visualize_kripke_model(model, true_world)
+
+            if voted_player.role == "detective":
+                n_detective -= 1
+            elif voted_player.role == "villager":
+                n_villagers -= 1
+            else:
+                n_mafia -= 1
+            self.game_status(n_villagers, n_mafia, n_detective)
+
+            #Night phase
+            night.detective_phase() 
+            killed_player = night.mafia_phase()
+            model = self.killed(model, killed_player)
+            #self.visualize_kripke_model(model, true_world)
+
+            if killed_player.role == "d":
+                n_detective -= 1
+            else:
+                n_villagers -= 1
+            self.game_status(n_villagers, n_mafia, n_detective)
+        return ks
+    
+    # Creates the players based on the true world
+    def create_players(self, true_world):
+        self.players = []
+        for agent in true_world:
+            if agent == 'v':
+                self.players.append(Villager())
+            if agent == 'm':
+                self.players.append(Mafia())
+            if agent == 'd':
+                self.players.append(Detective())
+        return self.players
+    
+    # Publicly announced that a player has been killed
+    def killed(self, ks, killed_player):
+        formula = Box_star(Atom(str(killed_player.role[0]+str(self.players.index(killed_player)+1))))
+        model = ks.solve(formula)
+        print("Player", str(self.players.index(killed_player)+1) + ",", "who was a", killed_player.role + ",", "was killed by the mafia! \n")
+        return model
+
+    # Publicly announced that a player has been voted out
+    def removed_by_vote(self, ks, voted_player):   
+        formula = Box_star(Atom(str(voted_player.role[0]+str(self.players.index(voted_player)+1))))
+        model = ks.solve(formula)
+        print("Player", str(self.players.index(voted_player)+1) + ",", "who was a", voted_player.role + ",", "was voted out! \n")
+        return model
+
+    # Visualizes the kripke model
     def visualize_kripke_model(self, kripke_model, true_world):
         """Visualizes the Kripke model worlds and relations."""
         # Create an empty directed graph
@@ -116,34 +191,35 @@ class MafiaGame:
         plt.axis('off')
         plt.show()
 
-    # Creates the players without ID
-    def init_players(self, n_villagers, n_mafia, n_detective):
-        self.players = []
-        for x in range(0, n_villagers):
-            self.players.append(Villager())
-
-        for x in range(0, n_mafia):
-            self.players.append(Mafia())
-
-        for x in range(0, n_detective):
-            self.players.append(Detective())
+    # Checks if the game is over or not
+    def game_status(self, n_v, n_m, n_d):
+        print("Number of villagers: ", n_v)
+        print("Number of detective: ", n_d)
+        print("Number of mafia: ", n_m)
+        if n_m == 0:
+            print("Villagers won!")
+            exit()
+        if n_m > (n_d + n_v):
+            print("Mafia won!")
+            exit()
+        else:
+            print("Next round! \n")
+            return 1
 
     def start(self):
         result = None
         finished = False
 
-        day = Day(self.players)
-
-        day.game_status()
-        print(self.players)
         while not finished:
+            print("end of game")
             finished = True
 
         return result
 
     def make_public_announcement(self, ks):
-        formula = Box_a("agent1",And(Not(Atom('m1')), Not(Atom('d1'))))
-
+        #print(ks)
+        formula = Box_a("agent1",And(Not(Atom('m2')), Not(Atom('d2'))))
+        #formula = Box_star(And(Not(Atom('m1'))))
         model = ks.solve(formula)
         self.visualize_kripke_model(model, 'vvmmd')
 
