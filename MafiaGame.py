@@ -135,7 +135,8 @@ class MafiaGame:
         if true_world in graph.nodes:
             true_world_index = list(graph.nodes).index(true_world)
             node_colors[true_world_index] = 'green'
-        nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=500)
+            
+        nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=1500)
 
         # Draw edges (relations)
         nx.draw_networkx_edges(graph, pos, arrowstyle='->', arrowsize=10, edge_color='gray')
@@ -144,7 +145,15 @@ class MafiaGame:
         labels = {node: node for node in graph.nodes}
         edge_labels = {(u, v): ','.join(data['labels']) for u, v, data in graph.edges(data=True)}
 
-        nx.draw_networkx_labels(graph, pos, labels=labels, font_size=10, font_color='black')
+        # Adjust positions of self-loop labels
+        for edge in graph.edges:
+            u, v = edge
+            if u == v:
+                x, y = pos[u]
+                plt.text(x, y + 0.2, ','.join(graph.edges[edge]['labels']), fontsize=8, color='gray', ha='center')
+                edge_labels.pop((u,v))
+
+        nx.draw_networkx_labels(graph, pos, labels=labels, font_size=8, font_color='black')
         nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8, font_color='gray')
 
         # Set plot title
@@ -152,8 +161,8 @@ class MafiaGame:
 
         # Show the plot
         plt.axis('off')
-        plt.show()
-
+        plt.show()   
+        
     # Checks if the game is over or not
     def game_status(self, n_v, n_m, n_d):
         print("Number of villagers: ", n_v)
@@ -185,6 +194,7 @@ class MafiaGame:
 
         result = None
         finished = False
+        first_run = True
         while not finished:
             #Night phase
             if n_d > 0:
@@ -193,7 +203,10 @@ class MafiaGame:
             removed_players.append(killed_player)
             
             #Public announcement of the killed player
-            model = self.public_announcement_killed(self.ks, killed_player)
+            if first_run:
+                model = self.public_announcement_killed(self.ks, killed_player)
+            else:
+                model = self.public_announcement_killed(model, killed_player)
             self.visualize_kripke_model(model, self.true_world)
 
             if killed_player.role == "detective":
@@ -217,5 +230,6 @@ class MafiaGame:
             else:
                 n_m -= 1
             finished = self.game_status(n_v, n_m, n_d)
+            first_run = False
         return result
         
