@@ -2,7 +2,7 @@ from MafiaGame import MafiaGame
 
 
 def main():
-   mafiaGame = MafiaGame(2,4,0)
+   mafiaGame = MafiaGame(2,1,1)
    mafiaGame.start()
    
 if __name__ == '__main__':
