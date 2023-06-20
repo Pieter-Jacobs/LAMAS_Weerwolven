@@ -97,7 +97,10 @@ class MafiaGame:
         if true_world in graph.nodes:
             true_world_index = list(graph.nodes).index(true_world)
             node_colors[true_world_index] = 'green'
-        nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=500)
+
+
+        print(pos)
+        nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=1500)
 
         # Draw edges (relations)
         nx.draw_networkx_edges(graph, pos, arrowstyle='->', arrowsize=10, edge_color='gray')
@@ -106,8 +109,16 @@ class MafiaGame:
         labels = {node: node for node in graph.nodes}
         edge_labels = {(u, v): ','.join(data['labels']) for u, v, data in graph.edges(data=True)}
 
-        nx.draw_networkx_labels(graph, pos, labels=labels, font_size=10, font_color='black')
-        nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8, font_color='gray')
+        # Adjust positions of self-loop labels
+        for edge in graph.edges:
+            u, v = edge
+            if u == v:
+                x, y = pos[u]
+                plt.text(x, y + 0.2, ','.join(graph.edges[edge]['labels']), fontsize=12, color='gray', ha='center')
+                edge_labels.pop((u,v))
+
+        nx.draw_networkx_labels(graph, pos, labels=labels, font_size=12, font_color='black')
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=12, font_color='gray')
 
         # Set plot title
         plt.title("Kripke Model Visualization")
@@ -142,7 +153,7 @@ class MafiaGame:
         return result
 
     def make_public_announcement(self, ks):
-        formula = Box_a("agent1",And(Not(Atom('m1')), Not(Atom('d1'))))
+        formula = Box_star((Atom('m2')))
 
         model = ks.solve(formula)
         self.visualize_kripke_model(model, 'vvmmd')
