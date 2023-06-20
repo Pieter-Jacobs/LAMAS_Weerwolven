@@ -2,8 +2,8 @@ from roles.agent import Agent
 import random 
 
 class Villager(Agent):
-    def __init__(self):
-        super().__init__("villager")
+    def __init__(self, id):
+        super().__init__("villager", id)
     
     # In here we can implement how the villagers are going to be communicating
     def discuss(self):

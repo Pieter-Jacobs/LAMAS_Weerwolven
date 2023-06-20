@@ -73,7 +73,8 @@ class MafiaGame:
         self.visualize_kripke_model(self.ks, self.true_world)
 
         #Initialise the day & night
-        self.day = Day(self.players, n_villagers, n_mafia, n_detective)
+        max_talking_rounds = 3
+        self.day = Day(self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
         self.night = Night(self.players, n_villagers, n_mafia, n_detective)
         
         return self.ks
@@ -81,13 +82,15 @@ class MafiaGame:
     # Creates the players based on the true world
     def create_players(self, true_world):
         self.players = []
+        idx = 1
         for agent in true_world:
             if agent == 'v':
-                self.players.append(Villager())
+                self.players.append(Villager(idx))
             if agent == 'm':
-                self.players.append(Mafia())
+                self.players.append(Mafia(idx))
             if agent == 'd':
-                self.players.append(Detective())
+                self.players.append(Detective(idx))
+            idx += 1
         return self.players
     
     # Publicly announced that a player has been killed

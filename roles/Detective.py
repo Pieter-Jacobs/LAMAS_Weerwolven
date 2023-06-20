@@ -3,8 +3,8 @@ import random
 
 class Detective(Agent):
 
-    def __init__(self):
-        super().__init__("detective")
+    def __init__(self, id):
+        super().__init__("detective", id)
 
     def inspect(self):
         pass
