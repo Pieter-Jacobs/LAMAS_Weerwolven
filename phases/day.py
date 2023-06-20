@@ -1,3 +1,5 @@
+import random
+
 class Day:
     def __init__(self, players, n_villagers, n_mafia, n_detectives):
         self.players = players
@@ -17,17 +19,23 @@ class Day:
             player.discuss()
 
     # Allows agents to vote based on their knowledge
-    def voting_phase(self):
-        print("Voting phase has started \n")
+    def voting_phase(self, removed_players):
+        print("-------------------------------- Voting phase has started --------------------------------\n")
         votes = {}
         for player in self.players:
-            vote = player.vote(self.players)
-            if vote in votes:
-                votes[vote] += 1
+            # Make sure the players who were removed can't vote
+            if player not in removed_players:
+                vote = player.vote(self.players, removed_players)
+                if vote in votes:
+                    votes[vote] += 1
+                else:
+                    votes[vote] = 1
             else:
-                votes[vote] = 1
+                pass
         max_votes = max(votes.values())
         removed_player = [player for player, vote_count in votes.items() if vote_count == max_votes]
-        return removed_player
 
-    
+        if len(removed_player) == 1:
+            return removed_player[0]
+        else:
+            return random.choice(removed_player)
