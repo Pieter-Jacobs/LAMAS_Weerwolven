@@ -18,11 +18,12 @@ class Night:
         print("-------------------------------- Detective phase has started --------------------------------\n")
         detectives = [player for player in self.players if player.role == "detective"]
         eligible_players = [player for player in self.players if player not in detectives]
-        if random.choice(eligible_players).role == 'mafia':
+        inspected_player = random.choice(eligible_players)
+        if inspected_player.role == 'mafia':
             #add this knowledge
-            print("The detective now knows the chosen player to be a mafia! \n")
+            print(f"The detective now knows player {inspected_player.get_ID()} to be a mafia! \n")
         else:
             #add this knowledge
-            print("The detective now knows the chosen player to be a villager! \n")
+            print(f"The detective now knows player {inspected_player.get_ID() } to be a villager! \n")
                 
 
