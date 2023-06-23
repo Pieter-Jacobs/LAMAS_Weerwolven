@@ -10,6 +10,7 @@ from phases.day import Day
 from phases.night import Night
 import matplotlib.pyplot as plt
 import networkx as nx
+from abc import abstractmethod
 
 class MafiaGame:
     def __init__(self, n_villagers, n_mafia, n_detective):
@@ -38,7 +39,7 @@ class MafiaGame:
         print("True world of this game: ", self.true_world)
 
         # Create the worlds for the Kripke structure
-        worlds = []
+        self.worlds = []
         for roles in all_possible_roles:
             world_name = ''.join(roles)
             world = World(world_name, {})
@@ -47,15 +48,15 @@ class MafiaGame:
                 atom = f'{role}{i + 1}'
                 world.assignment[atom] = True
                 
-            worlds.append(world)
+            self.worlds.append(world)
 
         # Create the relations dictionary based on the agent's role in each world
-        relations = {}
+        self.relations = {}
         for i, agent in enumerate(agents):
             agent_relations = []
-            for j, world in enumerate(worlds):
+            for j, world in enumerate(self.worlds):
                 agent_role = world.name[i]
-                for world_2 in worlds:
+                for world_2 in self.worlds:
                     # We add the world to the relation if the agents role is the same in the other, since he only knows his own role
                     if world_2.name[i] == agent_role:
                         if agent_role == 'm': 
@@ -66,11 +67,10 @@ class MafiaGame:
                                 agent_relations.append((world.name, world_2.name))
                         else:
                             agent_relations.append((world.name, world_2.name))
-            relations[agent] = set(agent_relations)
-        
+            self.relations[agent] = set(agent_relations)
         # Create the Kripke structure
-        self.ks = KripkeStructure(worlds, relations)
-        self.visualize_kripke_model(self.ks, self.true_world)
+        self.ks = KripkeStructure(self.worlds, self.relations)
+        self.visualize_kripke_model(self.ks, self.true_world, "Inital Kripke Model")
 
         #Initialise the day & night
         max_talking_rounds = 3
@@ -108,7 +108,7 @@ class MafiaGame:
         return model
 
     # Visualizes the kripke model
-    def visualize_kripke_model(self, kripke_model, true_world):
+    def visualize_kripke_model(self, kripke_model, true_world, title):
         """Visualizes the Kripke model worlds and relations."""
         # Create an empty directed graph
         graph = nx.DiGraph()
@@ -157,7 +157,7 @@ class MafiaGame:
         nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size=8, font_color='gray')
 
         # Set plot title
-        plt.title("Kripke Model Visualization")
+        plt.title(title)
 
         # Show the plot
         plt.axis('off')
@@ -178,8 +178,22 @@ class MafiaGame:
             print("Next round! \n")
             return False
 
+    # Private announcement detective
+    def update_detective_knowledge(self, agent, discovered_agent):
+        relations_to_remove = []
+        
+        for relation in self.relations["agent" + str(self.players.index(agent)+1)]:
+            if relation[0][self.players.index(discovered_agent)] != discovered_agent.role[0]:
+                relations_to_remove.append(relation)
+            elif relation[1][self.players.index(discovered_agent)] != discovered_agent.role[0]:
+                relations_to_remove.append(relation)
+        
+        self.relations[("agent" + str(self.players.index(agent)+1))] = self.relations[("agent" + str(self.players.index(agent)+1))].difference(set(relations_to_remove))
+        return self
+
     # Game loop
     def start(self):
+        self.max_talking_rounds = 2
         n_v, n_d, n_m = 0,0,0
         removed_players = []
         for player in self.players:
@@ -189,16 +203,30 @@ class MafiaGame:
                 n_d += 1
             else:
                 n_m += 1
-
-        print("In this game there are", n_v, "villagers,", n_m, "mafia, and", n_d, "detective.")
+        self.day.talking_round
+        print("In this game there are", n_v, "villagers,", n_m, "mafia, and", n_d, "detective. \n")
 
         result = None
         finished = False
         first_run = True
+       
         while not finished:
             #Night phase
+
+            #Detective
             if n_d > 0:
-                self.night.detective_phase() 
+                for player in self.players:
+                    if player.role == "detective":
+                        discovered_player = self.night.detective_phase()
+                        self.update_detective_knowledge(player, discovered_player)
+                        if first_run:
+                            model = KripkeStructure(self.worlds, self.relations)
+                            self.visualize_kripke_model(self.ks, self.true_world,str("Agent " + str(self.players.index(player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) +" ("+ str(discovered_player.role)+")"))
+                        else:
+                            model = KripkeStructure(self.worlds, self.relations)
+                            self.visualize_kripke_model(model, self.true_world,str("Agent " + str(self.players.index(player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) +" ("+ str(discovered_player.role)+")"))
+                        first_run = False
+            
             killed_player = self.night.mafia_phase(removed_players)
             removed_players.append(killed_player)
             
@@ -207,21 +235,24 @@ class MafiaGame:
                 model = self.public_announcement_killed(self.ks, killed_player)
             else:
                 model = self.public_announcement_killed(model, killed_player)
-            self.visualize_kripke_model(model, self.true_world)
-
+            self.visualize_kripke_model(model, self.true_world, str("Agent " + str(self.players.index(killed_player)+1) + " (" + str(killed_player.role)+ ")" + " was killed!"))
+            
             if killed_player.role == "detective":
                 n_d -= 1
             else:
                 n_v -= 1
             finished = self.game_status(n_v, n_m, n_d)
 
-            #Day phase
+            #Discussion
+            #self.day.discussion_phase()
+
+            #Voting
             voted_player = self.day.voting_phase(removed_players)
             removed_players.append(voted_player)
 
             #Public announcement of the voted player
             model = self.public_announcement_vote(model, voted_player)
-            self.visualize_kripke_model(model, self.true_world)
+            self.visualize_kripke_model(model, self.true_world, str("Agent " + str(self.players.index(voted_player)+1) + " (" + str(voted_player.role)+ ")"+ " was voted out!"))
 
             if voted_player.role == "detective":
                 n_d -= 1
