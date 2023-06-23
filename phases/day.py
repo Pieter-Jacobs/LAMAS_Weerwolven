@@ -1,5 +1,8 @@
 import random
 import math
+from mlsolver.kripke import World, KripkeStructure
+from mlsolver.tableau import *
+from mlsolver.formula import *
 
 class Day:
     def __init__(self, players, n_villagers, n_mafia, n_detectives, max_talking_rounds):
@@ -15,30 +18,59 @@ class Day:
             player.add_knowledge(information)
     
     # Allows agents to talk to each other
-    def discussion_phase(self):
+    def discussion_phase(self,):
+        print("-------------------------------- Discussion phase has started --------------------------------\n")
         for i in range(self.max_talking_rounds):
             self.talking_round()
+
+    def reasoning_rules(self):
+        # Talking with suspicious players
+        for id1 in range(len(self.players)):
+            for id2 in range(len(self.players)):
+                id2_suspicious = self.players[id2].suspicious
+                talk_list1 = self.players[id1].talk_list
+                talk_list2 = self.players[id2].talk_list
+                if id1 != id2 and id1 in talk_list2 and id2 in talk_list1 and id2_suspicious:
+                    formul = Atom('sus' + str(id2))
+                    print("STR: ", str(id1))
+                    print("Formula: ", formul)
+                    model.solve_a(str(id1), formul)
+                    #return model
+                    
+                    pass
+        print("didnt work")
+        pass
 
     # Perform a talking round
     def talking_round(self):
         # Decide who's gonna try to start talking and who's gonna listen
-        nr_talking_starters = math.floor(len(self.players) / 2)
-        talking_starters = random.choices(self.players, k=nr_talking_starters)
-        talking_partners = [player for player in self.players if player not in talking_starters]
+        nr_talks = int(len(self.players) / 2)
+        agent_ids = list(range(len(self.players)))
+        talk_starters = random.sample(agent_ids, nr_talks)
 
-        # Find out who's willing to talk
-        for starter in talking_starters:
-            idx = 0
-            while idx < len(talking_partners):
-                partner = talking_partners[idx]
-                if starter.talk_with(partner):
-                    print("Agent " + str(starter.get_ID()) + " talked with agent " + str(partner.get_ID()))
-                    talking_partners.remove(partner)
+        # Determine with which players the talk starters can talk
+        talk_receivers = [player for player in agent_ids if player not in talk_starters]
 
-                    # Add knowledge
 
-                    break
-                idx += 1
+        # Find out who talks to who
+        for starter in talk_starters:
+            receiver = talk_receivers.pop(0)
+
+            # Only if both players want to talk, the talk starts
+            if random.random() < self.players[starter].social and random.random() < self.players[receiver].social:
+                # Talk starts
+                print("Player " + str(starter) + " talks with player " + str(receiver))
+                print(str(starter), str(self.players[starter].suspicious), str(self.players[starter].role))
+                print(str(receiver), str(self.players[receiver].suspicious), str(self.players[starter].role))
+
+                self.players[starter].talk_with(receiver)
+                if self.players[receiver].suspicious:
+                    formula = Atom('sus')
+
+                self.players[receiver].talk_with(starter)
+
+                return self.reasoning_rules()
+                #self.visualize_model()
         pass
 
     # Allows agents to vote based on their knowledge
@@ -49,12 +81,14 @@ class Day:
             # Make sure the players who were removed can't vote
             if player not in removed_players:
                 vote = player.vote(self.players, removed_players)
+                print(player.role, "(agent", str(self.players.index(player)+1) + ")", "voted for: ", vote.role, "(agent",str(self.players.index(vote)+1) + ")")
                 if vote in votes:
                     votes[vote] += 1
                 else:
                     votes[vote] = 1
             else:
                 pass
+        print("\n")
         max_votes = max(votes.values())
         removed_player = [player for player, vote_count in votes.items() if vote_count == max_votes]
 
