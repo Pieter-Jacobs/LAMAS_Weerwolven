@@ -3,10 +3,11 @@ import random
 ''' This class serves as the basis for each agent'''
 class Agent():
 
-    def __init__(self, role, id):
+    def __init__(self, role, id, suspicious=False):
         self.knowledge = []
         self.social = random.uniform(0.5, 1)
-        self.suspicion = 'no'
+        self.suspicious = suspicious
+        self.alive = True
         self.role = role
         self.ID = id
         self.talk_list = []
@@ -27,12 +28,6 @@ class Agent():
         return self.ID
     
     def talk_with(self, agent):
-        talk_chance = random.random()
-        receive_chance = random.random()
-        if talk_chance < self.social and receive_chance < agent.social:
-            # Both agents want to talk
-            self.talk_list.append(agent.get_ID())
-            agent.talk_list.append(self.get_ID())
-            return True
-        # Agents don't want to talk
-        return False
+        # Add to player to talk list
+        if agent not in self.talk_list:
+            self.talk_list.append(agent)
