@@ -3,7 +3,7 @@ import random
 
 class Mafia(Agent):
     def __init__(self, id):
-        super().__init__("mafia", id)
+        super().__init__("mafia", id, True)
 
     def kill_player(self, players):
         pass
