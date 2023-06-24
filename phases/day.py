@@ -4,8 +4,6 @@ from mlsolver.tableau import *
 from mlsolver.formula import *
 
 from mlsolver.formula import Atom, Box_a
-import matplotlib.pyplot as plt
-import networkx as nx
 
 class Day:
     def __init__(self, model, true_world, players, n_villagers, n_mafia, n_detectives, max_talking_rounds):

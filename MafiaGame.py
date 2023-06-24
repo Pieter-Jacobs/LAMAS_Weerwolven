@@ -119,7 +119,7 @@ class MafiaGame:
         self.visualize_kripke_model(self.ks, self.true_world, "Inital Kripke Model")
 
         #Initialise the day & night
-        max_talking_rounds = 3
+        max_talking_rounds = 2
         self.day = Day(self.ks, self.true_world, self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
         self.night = Night(self.players, n_villagers, n_mafia, n_detective)
         
@@ -231,7 +231,6 @@ class MafiaGame:
     # Publicly announced that a player has been killed
     def public_announcement_killed(self, ks, killed_player):
         formula = Box_star(Atom(str(killed_player.role[0]+str(self.players.index(killed_player)+1))))
-        print(str(killed_player.role[0]+str(self.players.index(killed_player)+1)))
         model = ks.solve(formula)
         print("Player", str(self.players.index(killed_player)+1) + ",", "who was a", killed_player.role + ",", "was killed by the mafia! \n")
         return model
@@ -347,8 +346,7 @@ class MafiaGame:
         while not finished:
             # Discussion phase
             self.day.discussion_phase()
-            self.visualize_kripke_model(self.ks, self.true_world, "")
-            break
+            self.visualize_kripke_model(self.ks, self.true_world, "Discussion phase")
 
             #Night phase
 
