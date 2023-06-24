@@ -230,17 +230,15 @@ class MafiaGame:
     
     # Publicly announced that a player has been killed
     def public_announcement_killed(self, ks, killed_player):
-        formula = Box_star(Atom(str(killed_player.role[0]+str(self.players.index(killed_player)+1))))
-        model = ks.solve(formula)
+        self.ks.relations.pop("agent" + str(killed_player.get_ID()))
         print("Player", str(self.players.index(killed_player)+1) + ",", "who was a", killed_player.role + ",", "was killed by the mafia! \n")
-        return model
+        return self.ks
 
     # Publicly announced that a player has been voted out
     def public_announcement_vote(self, ks, voted_player):   
-        formula = Box_star(Atom(str(voted_player.role[0]+str(self.players.index(voted_player)+1))))
-        model = ks.solve(formula)
+        self.ks.relations.pop("agent" + str(voted_player.get_ID()))
         print("Player", str(self.players.index(voted_player)+1) + ",", "who was a", voted_player.role + ",", "was voted out! \n")
-        return model
+        return self.ks
 
     # Visualizes the kripke model
     def visualize_kripke_model(self, kripke_model, true_world, title):
@@ -315,15 +313,8 @@ class MafiaGame:
 
     # Private announcement detective
     def update_detective_knowledge(self, agent, discovered_agent):
-        relations_to_remove = []
-        
-        for relation in self.ks.relations["agent" + str(self.players.index(agent)+1)]:
-            if relation[0][self.players.index(discovered_agent)] != discovered_agent.role[0]:
-                relations_to_remove.append(relation)
-            elif relation[1][self.players.index(discovered_agent)] != discovered_agent.role[0]:
-                relations_to_remove.append(relation)
-        
-        self.ks.relations[("agent" + str(self.players.index(agent)+1))] = self.ks.relations[("agent" + str(self.players.index(agent)+1))].difference(set(relations_to_remove))
+        formula = Atom(discovered_agent.role[0] + str(discovered_agent.get_ID()))
+        self.ks.solve_a("agent" + str(agent.get_ID()), formula)
         return self
 
     # Game loop

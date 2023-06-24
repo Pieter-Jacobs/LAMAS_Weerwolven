@@ -4,6 +4,8 @@ from mlsolver.tableau import *
 from mlsolver.formula import *
 
 from mlsolver.formula import Atom, Box_a
+import matplotlib.pyplot as plt
+import networkx as nx
 
 class Day:
     def __init__(self, model, true_world, players, n_villagers, n_mafia, n_detectives, max_talking_rounds):
@@ -32,7 +34,9 @@ class Day:
             self.model.solve_a("agent" + str(agent1.get_ID()), formula)
 
         # Sharing suspicions
+        alive_players = ["agent" + str(player.get_ID()) for player in self.players if player.alive]
         other_players = [agent[5:] for agent in self.model.relations.keys() if agent[5:] != str(agent1.get_ID()) and agent[5:] != str(agent2.get_ID())]
+        other_players = [player for player in other_players if player in alive_players]
         for player in other_players:
             # Check whether agent 1 knows that another player is suspicious
             formula = Box_a("agent" + str(agent1.get_ID()), Atom("sus" + player))
@@ -53,7 +57,8 @@ class Day:
     def talking_round(self, round):
         print("--- Round " + str(round) + " ---")
         # Decide who's gonna try to start talking and who's gonna listen
-        nr_talking_starters = int(len(self.players) / 2)
+        talking_players = [player for player in self.players if player.alive]
+        nr_talking_starters = int(len(talking_players) / 2)
         talking_starters = random.sample(self.players, k=nr_talking_starters)
         talking_partners = [player for player in self.players if player not in talking_starters]
 

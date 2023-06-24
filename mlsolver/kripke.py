@@ -33,6 +33,25 @@ class KripkeStructure:
             if ks.nodes_not_follow_formula(formula) == []:
                 return ks
     
+    def remove_disconnected_worlds(self):
+        # Remove worlds that can't be reached anymore
+        worlds_to_remove = []
+        players = self.relations.keys()
+        for world in self.worlds:
+            can_be_reached = False
+            for player in players:
+                for relation in self.relations[player]:
+                    if world.name in relation:
+                        can_be_reached = True
+                        break
+                if can_be_reached:
+                    break
+            if not can_be_reached:
+                worlds_to_remove.append(world.name)
+        for world in worlds_to_remove:
+            self.remove_node_by_name(world)
+        return self
+
     def solve_a(self, agent, formula):
         '''
         From: https://github.com/JohnRoyale/MAS2018/blob/master/mlsolver/kripke.py#L36
@@ -52,23 +71,7 @@ class KripkeStructure:
 
         self.relations[str(agent)] = self.relations[str(agent)].difference(set(relations_to_remove))
 
-        # Remove worlds that can't be reached anymore
-        worlds_to_remove = []
-        players = self.relations.keys()
-        for world in self.worlds:
-            can_be_reached = False
-            for player in players:
-                for relation in self.relations[player]:
-                    if world.name in relation:
-                        can_be_reached = True
-                        break
-                if can_be_reached:
-                    break
-            if not can_be_reached:
-                worlds_to_remove.append(world.name)
-        for world in worlds_to_remove:
-            self.remove_node_by_name(world)
-
+        self.remove_disconnected_worlds()
         return self
 
     def remove_node_by_name(self, node_name):
