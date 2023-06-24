@@ -2,8 +2,8 @@ from roles.agent import Agent
 import random
 
 class Mafia(Agent):
-    def __init__(self, id):
-        super().__init__("mafia", id)
+    def __init__(self, id, suspicious):
+        super().__init__("mafia", id, suspicious)
 
     def kill_player(self, players):
         pass

@@ -2,7 +2,7 @@ from mlsolver.kripke import World, KripkeStructure
 from mlsolver.tableau import *
 from mlsolver.formula import *
 
-from itertools import permutations
+from itertools import permutations, product
 from roles.Detective import Detective
 from roles.Villager import Villager
 from roles.Mafia import Mafia
@@ -10,12 +10,120 @@ from phases.day import Day
 from phases.night import Night
 import matplotlib.pyplot as plt
 import networkx as nx
+import random
 
 class MafiaGame:
     def __init__(self, n_villagers, n_mafia, n_detective):
         #self.init_players(n_villagers, n_mafia, n_detective)
-        self.init_kripke_model(n_villagers, n_mafia, n_detective) 
+        self.init_sus_kripke_model(n_villagers, n_mafia, n_detective)
+        #self.init_kripke_model(n_villagers, n_mafia, n_detective) 
         pass
+
+    def init_sus_kripke_model(self, n_villagers, n_mafia, n_detective):
+        """Builds the initial Kripke model world, where everyone believes everyone can be any role,
+        m1: agent 1 is mafia
+        d1: agent 1 is detective
+        v1: agent 1 is villager
+        """
+
+        agents = [f'agent{i + 1}' for i in range(n_villagers + n_mafia + n_detective)]
+
+        # Create all possible combinations of agent roles
+        game_roles = ['v'] * n_villagers + ['m'] * n_mafia + ['d'] * n_detective
+        self.true_world = ''.join(game_roles)
+
+        all_possible_roles = set(permutations(game_roles))
+
+        # Add worlds with suspicions
+        sus_worlds = []
+        for world in all_possible_roles:
+            # Determine all suspicion combinations for current world
+            sus_combinations = list(product([0,1], repeat=len(world)))
+
+            # Filter worlds that have mafia already marked as suspicious
+            mafia_indexes = [idx for idx, role in enumerate(world) if role == "m"]
+            binary_worlds = []
+            for sus in sus_combinations:
+                add_to_worlds = True
+                for idx in mafia_indexes:
+                    if sus[idx] == 0:
+                        add_to_worlds = False
+                if add_to_worlds:
+                    binary_worlds.append(sus)
+            
+            # Apply suspicious markings to current world
+            current_sus_worlds = []
+            for binary_world in binary_worlds:
+                sus_world = []
+                for idx, sus in enumerate(binary_world):
+                    if sus == 0 or world[idx] == 'm':
+                        sus_world.append(world[idx])
+                    elif sus == 1 and world[idx] != 'm':
+                        sus_world.append(world[idx] + '*')
+                current_sus_worlds.append(tuple(sus_world))
+            sus_worlds += current_sus_worlds
+
+            # Pick random sus world as the true sus world
+            if ''.join(world) == self.true_world:
+                self.true_world = ''.join(random.choice(current_sus_worlds))
+        
+        self.players = self.create_players(self.true_world)
+        print("True world of this game: ", self.true_world)
+
+        # Create the sus worlds for the Kripke structure
+        worlds = []
+        for roles in sus_worlds:
+            world_name = ''.join(roles)
+            world = World(world_name, {})
+            for i, role in enumerate(roles):
+                if len(role) == 2:
+                    # Agent i is suspicios
+                    atom = f'{role[0]}{i + 1}'
+                    sus_atom = f'sus{i+1}'
+                    world.assignment[atom] = True
+                    world.assignment[sus_atom] = True
+                else:
+                    # Agent i is not suspicious
+                    atom = f'{role}{i + 1}'
+                    world.assignment[atom] = True
+            worlds.append(world)
+        
+        # Create the relations dictionary based on the agent's role in each world
+        relations = {}
+        for i, agent in enumerate(agents):
+            agent_relations = []
+            for j, world in enumerate(worlds):
+                # Determine agent role in current world
+                agent_role = world.name.replace("*", "")[i]
+
+                for world_2 in worlds:
+                    agent2_role = world_2.name.replace("*", "")[i]
+
+                    # We add the world to the relation if the agent's role
+                    # is the same in the other, since he only knows his own role
+                    if agent_role == agent2_role:
+                        if agent_role == "m":
+                            # However, the mafia also knows the role of ther mafiosi, so they
+                            # have extra knowledge and only get relations to worlds where
+                            # the mafia is the same as in the other
+                            world_1_mafia = [i+1 for i, x in enumerate(world.name.replace("*", "")) if x == "m"]
+                            world_2_mafia = [i+1 for i, x in enumerate(world_2.name.replace("*", "")) if x == "m"]
+                            if sorted(world_1_mafia) == sorted(world_2_mafia):
+                                agent_relations.append((world.name, world_2.name))
+                        else:
+                            agent_relations.append((world.name, world_2.name))
+            relations[agent] = set(agent_relations)
+        
+        # Create the Kripke structure
+        self.ks = KripkeStructure(worlds, relations)
+        self.visualize_kripke_model(self.ks, self.true_world)
+
+        #Initialise the day & night
+        max_talking_rounds = 3
+        self.day = Day(self.ks, self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
+        self.night = Night(self.players, n_villagers, n_mafia, n_detective)
+        
+        return self.ks
 
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
         """Builds the initial Kripke model world, where everyone believes everyone can be any role,
@@ -74,7 +182,7 @@ class MafiaGame:
 
         #Initialise the day & night
         max_talking_rounds = 3
-        self.day = Day(self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
+        self.day = Day(self.ks, self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
         self.night = Night(self.players, n_villagers, n_mafia, n_detective)
         
         return self.ks
@@ -84,14 +192,22 @@ class MafiaGame:
         self.players = []
         idx = 1
         for agent in true_world:
+            suspicious = False
+            if random.random() < 0.5:
+                suspicious = True
+
             if agent == 'v':
-                self.players.append(Villager(idx))
+                self.players.append(Villager(idx, suspicious))
             if agent == 'm':
-                self.players.append(Mafia(idx))
+                self.players.append(Mafia(idx, True))
             if agent == 'd':
-                self.players.append(Detective(idx))
+                self.players.append(Detective(idx, suspicious))
             idx += 1
         return self.players
+    
+    def create_sus_players(self, true_world):
+        self.players = []
+        idx = 1
     
     # Publicly announced that a player has been killed
     def public_announcement_killed(self, ks, killed_player):
@@ -128,7 +244,7 @@ class MafiaGame:
                     graph.add_edge(relation[0], relation[1], labels=['R' + agent[5:]])
 
         # Set node positions using a spring layout algorithm
-        pos = nx.spring_layout(graph)
+        pos = nx.circular_layout(graph)
 
         # Draw nodes (worlds)
         node_colors = ['lightblue'] * len(graph.nodes)
@@ -196,6 +312,9 @@ class MafiaGame:
         finished = False
         first_run = True
         while not finished:
+            # Discussion phase
+            self.day.discussion_phase()
+
             #Night phase
             if n_d > 0:
                 self.night.detective_phase() 

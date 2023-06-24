@@ -2,7 +2,7 @@ from MafiaGame import MafiaGame
 
 
 def main():
-   mafiaGame = MafiaGame(2,1,1)
+   mafiaGame = MafiaGame(1,1,0)
    #mafiaGame.day.talking_round()
    mafiaGame.start()
 
