@@ -195,7 +195,6 @@ class MafiaGame:
     def start(self):
         self.max_talking_rounds = 2
         n_v, n_d, n_m = 0,0,0
-        removed_players = []
         for player in self.players:
             if player.role[0] == 'v':
                 n_v += 1
@@ -227,8 +226,8 @@ class MafiaGame:
                             self.visualize_kripke_model(model, self.true_world,str("Agent " + str(self.players.index(player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) +" ("+ str(discovered_player.role)+")"))
                         first_run = False
             
-            killed_player = self.night.mafia_phase(removed_players)
-            removed_players.append(killed_player)
+            killed_player = self.night.mafia_phase()
+            killed_player.alive = False
             
             #Public announcement of the killed player
             if first_run:
@@ -244,11 +243,11 @@ class MafiaGame:
             finished = self.game_status(n_v, n_m, n_d)
 
             #Discussion
-            #self.day.discussion_phase()
+            self.day.discussion_phase()
 
             #Voting
-            voted_player = self.day.voting_phase(removed_players)
-            removed_players.append(voted_player)
+            voted_player = self.day.voting_phase()
+            voted_player.alive = False
 
             #Public announcement of the voted player
             model = self.public_announcement_vote(model, voted_player)
