@@ -90,14 +90,55 @@ class Day:
         for player in self.players:
             # Make sure the players who were removed can't vote
             if player.alive == True:
-                vote = player.vote(self.players)
+                # Random vote choice
+                vote = None
+                if player.role == "mafia":
+                    # Mafia voting strategy
+                    vote_players = [agent for agent in self.players if agent.get_ID() != player.get_ID() and agent.role != "mafia" and agent.alive == True]
+                    if len(vote_players) == 1:
+                        # Only one possible alive player that isn't mafia
+                        vote = vote_players[0]
+                    else:
+                        # Check for knowledge about players that have suspicions about this mafioso
+                        for agent in vote_players:
+                            formula = Box_a("agent" + str(player.get_ID()), Box_a("agent" + str(agent.get_ID()), Atom("sus" + str(player.get_ID()))))
+                            if formula.semantic(self.model, self.true_world):
+                                vote = agent
+                                break
+                        # If no luck yet, pick randomly
+                        if vote == None:
+                            vote = random.choice([agent for agent in vote_players if agent.get_ID() != player.get_ID() and agent.alive])
+                else:
+                    # Townfolk voting strategy
+                    vote_players = [agent for agent in self.players if agent.get_ID() != player.get_ID() and agent.alive == True]
+                    if len(vote_players) == 1:
+                        # Only one possible alive player
+                        vote = vote_players[0]
+                    else:
+                        # Check for knowledge about suspicions
+                        for agent in vote_players:
+                            formula = Box_a("agent" + str(player.get_ID()), Atom("sus" + str(agent.get_ID())))
+                            if formula.semantic(self.model, self.true_world):
+                                vote = agent
+                                break
+                        # Check for knowledge about people who have suspicions
+                        for agent in vote_players:
+                            for agent2 in [other_agent for other_agent in vote_players if other_agent.get_ID() != agent.get_ID()]:
+                                formula = Box_a("agent" + str(player.get_ID()), Box_a("agent" + str(agent.get_ID()), Atom("sus" + str(agent2.get_ID()))))
+                                if formula.semantic(self.model, self.true_world):
+                                    vote = agent
+                                    break
+                        # If no luck yet, pick randomly
+                        if vote == None:
+                            vote = random.choice([agent for agent in vote_players if agent.get_ID() != player.get_ID() and agent.alive])
+                    pass
+
+                #vote = player.vote(self.players)
                 print(player.role, "(agent", str(self.players.index(player)+1) + ")", "voted for: ", vote.role, "(agent",str(self.players.index(vote)+1) + ")")
                 if vote in votes:
                     votes[vote] += 1
                 else:
                     votes[vote] = 1
-            else:
-                pass
         print("\n")
         max_votes = max(votes.values())
         removed_player = [player for player, vote_count in votes.items() if vote_count == max_votes]
