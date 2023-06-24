@@ -244,6 +244,9 @@ class MafiaGame:
     def visualize_kripke_model(self, kripke_model, true_world, title):
         """Visualizes the Kripke model worlds and relations."""
         # Create an empty directed graph
+        if len(kripke_model.worlds) > 150:
+            return
+
         graph = nx.DiGraph()
 
         # Add nodes (worlds) to the graph
@@ -328,17 +331,15 @@ class MafiaGame:
                 n_d += 1
             else:
                 n_m += 1
-        self.day.talking_round
         print("In this game there are", n_v, "villagers,", n_m, "mafia, and", n_d, "detective. \n")
 
         result = None
         finished = False
 
+        # Discussion phase
+        self.day.discussion_phase()
+        self.visualize_kripke_model(self.ks, self.true_world, "Discussion phase")
         while not finished:
-            # Discussion phase
-            self.day.discussion_phase()
-            self.visualize_kripke_model(self.ks, self.true_world, "Discussion phase")
-
             #Night phase
 
             #Detective

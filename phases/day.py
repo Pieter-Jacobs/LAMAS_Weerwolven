@@ -35,8 +35,7 @@ class Day:
 
         # Sharing suspicions
         alive_players = ["agent" + str(player.get_ID()) for player in self.players if player.alive]
-        other_players = [agent[5:] for agent in self.model.relations.keys() if agent[5:] != str(agent1.get_ID()) and agent[5:] != str(agent2.get_ID())]
-        other_players = [player for player in other_players if player in alive_players]
+        other_players = [agent[5:] for agent in self.model.relations.keys() if agent in alive_players and agent[5:] != str(agent1.get_ID()) and agent[5:] != str(agent2.get_ID())]
         for player in other_players:
             # Check whether agent 1 knows that another player is suspicious
             formula = Box_a("agent" + str(agent1.get_ID()), Atom("sus" + player))
@@ -59,8 +58,8 @@ class Day:
         # Decide who's gonna try to start talking and who's gonna listen
         talking_players = [player for player in self.players if player.alive]
         nr_talking_starters = int(len(talking_players) / 2)
-        talking_starters = random.sample(self.players, k=nr_talking_starters)
-        talking_partners = [player for player in self.players if player not in talking_starters]
+        talking_starters = random.sample(talking_players, k=nr_talking_starters)
+        talking_partners = [player for player in talking_players if player not in talking_starters]
 
         # Find out who's willing to talk
         talk_counter = 0
