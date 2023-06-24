@@ -121,7 +121,7 @@ class MafiaGame:
         #Initialise the day & night
         max_talking_rounds = 2
         self.day = Day(self.ks, self.true_world, self.players, n_villagers, n_mafia, n_detective, max_talking_rounds)
-        self.night = Night(self.players, n_villagers, n_mafia, n_detective)
+        self.night = Night(self.ks, self.true_world, self.players, n_villagers, n_mafia, n_detective)
         
         return self.ks
 
