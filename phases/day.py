@@ -1,5 +1,7 @@
 import random
-import math
+from mlsolver.kripke import World, KripkeStructure
+from mlsolver.tableau import *
+from mlsolver.formula import *
 
 from mlsolver.formula import Atom, Box_a
 
@@ -11,18 +13,30 @@ class Day:
         self.n_mafia = n_mafia
         self.n_detectives = n_detectives
         self.max_talking_rounds = max_talking_rounds
-
-    # Public announcement is made, adding the information to each players' knowledge
-    def announcement_phase(self, information):
-        for player in self.players:
-            player.add_knowledge(information)
     
     # Allows agents to talk to each other
-    def discussion_phase(self):
+    def discussion_phase(self,):
         print("-------------------------------- Discussion phase has started --------------------------------\n")
         for i in range(self.max_talking_rounds):
             self.talking_round(i+1)
         print("")
+
+    def reasoning_rules(self):
+        alive_players =[]
+        for player in self.players:
+            if player.alive == True:
+                alive_players.append(player)
+        # Talking with suspicious players
+        for id1 in range(len(alive_players)):
+            for id2 in range(len(alive_players)):
+                id2_suspicious = alive_players[id2].suspicious
+                talk_list1 = alive_players[id1].talk_list
+                talk_list2 = alive_players[id2].talk_list
+                if id1 != id2 and id1 in talk_list2 and id2 in talk_list1 and id2_suspicious:
+                    formula = Atom('sus' + str(id2))
+                    #model.solve_a(str(id1), formul)
+                    pass
+        pass
 
     # Perform a talking round
     def talking_round(self, round):
@@ -64,19 +78,21 @@ class Day:
             print("Nobody wanted to talk!")
 
     # Allows agents to vote based on their knowledge
-    def voting_phase(self, removed_players):
+    def voting_phase(self):
         print("-------------------------------- Voting phase has started --------------------------------\n")
         votes = {}
         for player in self.players:
             # Make sure the players who were removed can't vote
-            if player not in removed_players:
-                vote = player.vote(self.players, removed_players)
+            if player.alive == True:
+                vote = player.vote(self.players)
+                print(player.role, "(agent", str(self.players.index(player)+1) + ")", "voted for: ", vote.role, "(agent",str(self.players.index(vote)+1) + ")")
                 if vote in votes:
                     votes[vote] += 1
                 else:
                     votes[vote] = 1
             else:
                 pass
+        print("\n")
         max_votes = max(votes.values())
         removed_player = [player for player, vote_count in votes.items() if vote_count == max_votes]
 

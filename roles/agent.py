@@ -3,10 +3,11 @@ import random
 ''' This class serves as the basis for each agent'''
 class Agent():
 
-    def __init__(self, role, id, suspicous):
+    def __init__(self, role, id, suspicious=False):
         self.knowledge = []
         self.social = random.uniform(0.5, 1)
-        self.suspicious = suspicous
+        self.suspicious = suspicious
+        self.alive = True
         self.role = role
         self.ID = id
         self.talk_list = []
