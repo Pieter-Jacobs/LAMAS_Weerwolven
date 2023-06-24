@@ -1,5 +1,4 @@
 import random
-import math
 from mlsolver.kripke import World, KripkeStructure
 from mlsolver.tableau import *
 from mlsolver.formula import *
@@ -11,11 +10,6 @@ class Day:
         self.n_mafia = n_mafia
         self.n_detectives = n_detectives
         self.max_talking_rounds = max_talking_rounds
-
-    # Public announcement is made, adding the information to each players' knowledge
-    def announcement_phase(self, information):
-        for player in self.players:
-            player.add_knowledge(information)
     
     # Allows agents to talk to each other
     def discussion_phase(self,):
@@ -24,33 +18,35 @@ class Day:
             self.talking_round()
 
     def reasoning_rules(self):
+        alive_players =[]
+        for player in self.players:
+            if player.alive == True:
+                alive_players.append(player)
         # Talking with suspicious players
-        for id1 in range(len(self.players)):
-            for id2 in range(len(self.players)):
-                id2_suspicious = self.players[id2].suspicious
-                talk_list1 = self.players[id1].talk_list
-                talk_list2 = self.players[id2].talk_list
+        for id1 in range(len(alive_players)):
+            for id2 in range(len(alive_players)):
+                id2_suspicious = alive_players[id2].suspicious
+                talk_list1 = alive_players[id1].talk_list
+                talk_list2 = alive_players[id2].talk_list
                 if id1 != id2 and id1 in talk_list2 and id2 in talk_list1 and id2_suspicious:
-                    formul = Atom('sus' + str(id2))
-                    print("STR: ", str(id1))
-                    print("Formula: ", formul)
-                    model.solve_a(str(id1), formul)
-                    #return model
-                    
+                    formula = Atom('sus' + str(id2))
+                    #model.solve_a(str(id1), formul)
                     pass
-        print("didnt work")
         pass
 
     # Perform a talking round
     def talking_round(self):
+        alive_players = []
         # Decide who's gonna try to start talking and who's gonna listen
-        nr_talks = int(len(self.players) / 2)
-        agent_ids = list(range(len(self.players)))
+        for player in self.players:
+            if player.alive == True:
+                alive_players.append(player)
+        nr_talks = int(len(alive_players) / 2)
+        agent_ids = list(range(len(alive_players)))
         talk_starters = random.sample(agent_ids, nr_talks)
 
         # Determine with which players the talk starters can talk
         talk_receivers = [player for player in agent_ids if player not in talk_starters]
-
 
         # Find out who talks to who
         for starter in talk_starters:
@@ -69,18 +65,18 @@ class Day:
 
                 self.players[receiver].talk_with(starter)
 
-                return self.reasoning_rules()
+                self.reasoning_rules()
                 #self.visualize_model()
         pass
 
     # Allows agents to vote based on their knowledge
-    def voting_phase(self, removed_players):
+    def voting_phase(self):
         print("-------------------------------- Voting phase has started --------------------------------\n")
         votes = {}
         for player in self.players:
             # Make sure the players who were removed can't vote
-            if player not in removed_players:
-                vote = player.vote(self.players, removed_players)
+            if player.alive == True:
+                vote = player.vote(self.players)
                 print(player.role, "(agent", str(self.players.index(player)+1) + ")", "voted for: ", vote.role, "(agent",str(self.players.index(vote)+1) + ")")
                 if vote in votes:
                     votes[vote] += 1
