@@ -4,10 +4,13 @@ from mlsolver.tableau import *
 from mlsolver.formula import *
 
 from mlsolver.formula import Atom, Box_a
+import matplotlib.pyplot as plt
+import networkx as nx
 
 class Day:
-    def __init__(self, model, players, n_villagers, n_mafia, n_detectives, max_talking_rounds):
+    def __init__(self, model, true_world, players, n_villagers, n_mafia, n_detectives, max_talking_rounds):
         self.model = model
+        self.true_world = true_world
         self.players = players
         self.n_villagers = n_villagers
         self.n_mafia = n_mafia
@@ -15,28 +18,38 @@ class Day:
         self.max_talking_rounds = max_talking_rounds
     
     # Allows agents to talk to each other
-    def discussion_phase(self,):
+    def discussion_phase(self):
         print("-------------------------------- Discussion phase has started --------------------------------\n")
         for i in range(self.max_talking_rounds):
             self.talking_round(i+1)
         print("")
 
-    def reasoning_rules(self):
-        alive_players =[]
-        for player in self.players:
-            if player.alive == True:
-                alive_players.append(player)
-        # Talking with suspicious players
-        for id1 in range(len(alive_players)):
-            for id2 in range(len(alive_players)):
-                id2_suspicious = alive_players[id2].suspicious
-                talk_list1 = alive_players[id1].talk_list
-                talk_list2 = alive_players[id2].talk_list
-                if id1 != id2 and id1 in talk_list2 and id2 in talk_list1 and id2_suspicious:
-                    formula = Atom('sus' + str(id2))
-                    #model.solve_a(str(id1), formul)
-                    pass
-        pass
+    def talking_rules(self, agent1, agent2):
+        # If one of two talking agents is acting suspicious, the other will know
+        if agent1.is_suspicious():
+            formula = Atom("sus" + str(agent1.get_ID()))
+            self.model.solve_a("agent" + str(agent2.get_ID()), formula)
+        if agent2.is_suspicious():
+            formula = Atom("sus" + str(agent2.get_ID()))
+            self.model.solve_a("agent" + str(agent1.get_ID()), formula)
+
+        # Sharing suspicions
+        other_players = [agent[5:] for agent in self.model.relations.keys() if agent[5:] != str(agent1.get_ID()) and agent[5:] != str(agent2.get_ID())]
+        for player in other_players:
+            # Check whether agent 1 knows that another player is suspicious
+            formula = Box_a("agent" + str(agent1.get_ID()), Atom("sus" + player))
+            if formula.semantic(self.model, self.true_world):
+                # If true, agent 2 knows that agent 1 knows that another player is suspicious
+                formula = Box_a("agent" + str(agent2.get_ID()), formula)
+                self.model.solve_a("agent" + str(agent2.get_ID()), formula)
+            
+            # Check whether agent 2 knows that another player is suspicious
+            formula = Box_a("agent" + str(agent2.get_ID()), Atom("sus" + player))
+            if formula.semantic(self.model, self.true_world):
+                # If true, agent 1 knows that agent 2 knows that another player is suspicious
+                formula = Box_a("agent" + str(agent1.get_ID()), formula)
+                self.model.solve_a("agent" + str(agent1.get_ID()), formula)
+            
 
     # Perform a talking round
     def talking_round(self, round):
@@ -56,18 +69,9 @@ class Day:
                     print("Agent " + str(starter.get_ID()) + " talked with agent " + str(partner.get_ID()))
                     talking_partner = partner
                     talk_counter += 1
-                    
-                    # Add partners to talk lists
-                    starter.add_talk(partner.get_ID())
-                    partner.add_talk(starter.get_ID())
 
                     # Exchange knowledge
-                    if starter.is_suspicious():
-                        formula = Box_a(partner.get_ID()+1, "sus")
-                        pass
-                    if partner.is_suspicious():
-                        print("sus2")
-                        pass
+                    self.talking_rules(starter, partner)
                     break
             
             # Remove partner from the list if starter has talked to them this round
