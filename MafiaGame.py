@@ -231,12 +231,14 @@ class MafiaGame:
     # Publicly announced that a player has been killed
     def public_announcement_killed(self, ks, killed_player):
         self.ks.relations.pop("agent" + str(killed_player.get_ID()))
+        self.ks.remove_disconnected_worlds()
         print("Player", str(self.players.index(killed_player)+1) + ",", "who was a", killed_player.role + ",", "was killed by the mafia! \n")
         return self.ks
 
     # Publicly announced that a player has been voted out
     def public_announcement_vote(self, ks, voted_player):   
         self.ks.relations.pop("agent" + str(voted_player.get_ID()))
+        self.ks.remove_disconnected_worlds()
         print("Player", str(self.players.index(voted_player)+1) + ",", "who was a", voted_player.role + ",", "was voted out! \n")
         return self.ks
 
