@@ -14,7 +14,8 @@ import random
 
 
 class MafiaKripkeStructure:
-    def __init__(self, n_villagers, n_mafia, n_detective):
+    def __init__(self, n_villagers, n_mafia, n_detective, sus_chance=0.1):
+        self.sus_chance = sus_chance
         self.init_kripke_model(n_villagers, n_mafia, n_detective)
 
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
@@ -22,7 +23,6 @@ class MafiaKripkeStructure:
             f'agent{i + 1}' for i in range(n_villagers + n_mafia + n_detective)]
         game_roles = ['v'] * n_villagers + \
             ['m'] * n_mafia + ['d'] * n_detective
-
         # The true world is always the regular order of roles
         self.true_world = ''.join(game_roles)
 
@@ -30,13 +30,10 @@ class MafiaKripkeStructure:
 
         sus_worlds = self.init_sus_worlds(all_possible_roles)
         self.players = self.create_sus_players(self.true_world)
-
         worlds = self.init_worlds(sus_worlds)
         relations = self.init_relations(worlds, agents)
 
         self.model = KripkeStructure(worlds, relations)
-
-        print("True world of this game: ", self.true_world)
 
     def init_sus_worlds(self, all_possible_roles):
         sus_worlds = []
@@ -55,8 +52,13 @@ class MafiaKripkeStructure:
             current_sus_worlds = self.apply_suspicion_markings(
                 world, binary_worlds)
             sus_worlds += current_sus_worlds
-            if ''.join(world) == self.true_world:
-                self.true_world = ''.join(random.choice(current_sus_worlds))
+
+            # Randomly add suspicious townfolk
+            self.true_world = list(sus_worlds[0])
+            for i, role in enumerate(self.true_world):
+                if role != 'm*' and random.random() <= self.sus_chance:
+                    self.true_world[i] += '*'
+            self.true_world = ''.join(tuple(self.true_world))
         return sus_worlds
 
     def create_sus_players(self, true_world):

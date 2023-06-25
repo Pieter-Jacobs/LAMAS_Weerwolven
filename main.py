@@ -1,5 +1,6 @@
 from MafiaGame import MafiaGame
-
+import matplotlib.pyplot as plt
+from plot import *
 
 def main():
    results = {
@@ -14,11 +15,13 @@ def main():
    }
 
    for strategy in ["Random", "Logic"]:
-      for run in range(2):
-            mafiaGame = MafiaGame(2, 1, 0, visualize_ks=False)
+      for run in range(100):
+            mafiaGame = MafiaGame(1, 1, 1, visualize_ks=False, verbose=False)
             result = mafiaGame.start()
             results[strategy][result].append(mafiaGame.get_avg_sociability()) 
-   print(results)
+
+   plot_sociability_box(results)
+   plot_win_percentages(results)
 
 if __name__ == '__main__':
    main()

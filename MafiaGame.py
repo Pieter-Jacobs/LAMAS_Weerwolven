@@ -16,14 +16,17 @@ from MafiaKripkeStructure import MafiaKripkeStructure
 
 
 class MafiaGame:
-    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=1, visualize_ks=False):
+    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=2, visualize_ks=False, verbose=False):
         self.vizualize_ks = visualize_ks
+        self.verbose = verbose
         self.ks = MafiaKripkeStructure(n_villagers, n_mafia, n_detective)
+        if verbose:
+            print("True world of this game: ", self.ks.true_world)
         if visualize_ks:
             self.ks.visualize("Initial Kripke Model")
         self.day = Day(self.ks, n_villagers, n_mafia,
-                       n_detective, n_talking_rounds)
-        self.night = Night(self.ks, n_villagers, n_mafia, n_detective)
+                       n_detective, n_talking_rounds, verbose)
+        self.night = Night(self.ks, n_villagers, n_mafia, n_detective, verbose)
 
     def get_avg_sociability(self):
         return np.mean([player.sociability for player in self.ks.players])
@@ -31,8 +34,9 @@ class MafiaGame:
     # Publicly announced that a player has been killed
 
     def public_announcement_killed(self, killed_player):
-        print("Player", str(self.ks.players.index(killed_player)+1) + ",",
-              "who was a", killed_player.role + ",", "was killed by the mafia! \n")
+        if self.verbose:
+            print("Player", str(self.ks.players.index(killed_player)+1) + ",",
+                  "who was a", killed_player.role + ",", "was killed by the mafia! \n")
         formula = Atom(
             killed_player.role[0] + str(killed_player.get_ID()))
 
@@ -47,8 +51,9 @@ class MafiaGame:
     # Publicly announced that a player has been voted out
 
     def public_announcement_vote(self, voted_player):
-        print("Player", str(self.ks.players.index(voted_player)+1) + ",",
-              "who was a", voted_player.role + ",", "was voted out! \n")
+        if self.verbose:
+            print("Player", str(self.ks.players.index(voted_player)+1) + ",",
+                  "who was a", voted_player.role + ",", "was voted out! \n")
         formula = Atom(
             voted_player.role[0] + str(voted_player.get_ID()))
 
@@ -63,31 +68,35 @@ class MafiaGame:
 
     # Checks if the game is over or not
     def game_status(self, n_v, n_m, n_d):
-        print("Number of villagers: ", n_v)
-        print("Number of detective: ", n_d)
-        print("Number of mafia: ", n_m, "\n")
+        if self.verbose:
+            print("Number of villagers: ", n_v)
+            print("Number of detective: ", n_d)
+            print("Number of mafia: ", n_m, "\n")
         if n_m == 0:
-            print("Townfolk won!")
+            if self.verbose:
+                print("Townfolk won!")
             return "Townfolk"
         if n_m > (n_d + n_v):
-            print("Mafia won!")
+            if self.verbose:
+                print("Mafia won!")
             return "Mafia"
-        print("Next round! \n")
+        if self.verbose:
+            print("Next round! \n")
         return False
 
     # Private announcement detective
     def update_detective_knowledge(self, agent, discovered_agent):
         formula = Atom(
             discovered_agent.role[0] + str(discovered_agent.get_ID()))
-        self.ks.solve_a("agent" + str(agent.get_ID()), formula)
+        self.ks.model.solve_a("agent" + str(agent.get_ID()), formula)
         return self
 
     # Game loop
     def start(self):
         n_v, n_d, n_m = self.count_roles()
-
-        print("In this game there are", n_v, "villagers,",
-              n_m, "mafia, and", n_d, "detective. \n")
+        if self.verbose:
+            print("In this game there are", n_v, "villagers,",
+                  n_m, "mafia, and", n_d, "detective. \n")
 
         finished = False
 
@@ -100,7 +109,7 @@ class MafiaGame:
 
             #Detective
             if n_d > 0:
-                for player in self.players:
+                for player in self.ks.players:
                     if player.role == "detective":
                         discovered_player = self.night.detective_phase()
                         self.update_detective_knowledge(
