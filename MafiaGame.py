@@ -14,8 +14,9 @@ import random
 import numpy as np
 from MafiaKripkeStructure import MafiaKripkeStructure
 
-
+# Class containing every function needed to simulate the game of Mafia
 class MafiaGame:
+
     def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=2, visualize_ks=False, verbose=False):
         self.vizualize_ks = visualize_ks
         self.verbose = verbose
@@ -28,11 +29,11 @@ class MafiaGame:
                        n_detective, n_talking_rounds, verbose)
         self.night = Night(self.ks, n_villagers, n_mafia, n_detective, verbose)
 
+    # Determines the average sociability value of all players
     def get_avg_sociability(self):
         return np.mean([player.sociability for player in self.ks.players])
 
-    # Publicly announced that a player has been killed
-
+    # Publicly announces that a player has been killed
     def public_announcement_killed(self, killed_player):
         if self.verbose:
             print("Player", str(self.ks.players.index(killed_player)+1) + ",",
@@ -49,7 +50,6 @@ class MafiaGame:
             self.ks.model.solve_a(agent, formula)
 
     # Publicly announced that a player has been voted out
-
     def public_announcement_vote(self, voted_player):
         if self.verbose:
             print("Player", str(self.ks.players.index(voted_player)+1) + ",",
@@ -156,6 +156,7 @@ class MafiaGame:
             finished = self.game_status(n_v, n_m, n_d)
         return finished
 
+    # Determines the number of players per role
     def count_roles(self):
         n_v, n_d, n_m = 0, 0, 0
         for player in self.ks.players:

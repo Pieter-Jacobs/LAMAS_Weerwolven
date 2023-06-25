@@ -1,9 +1,9 @@
 import random
-
 from mlsolver.formula import Atom, Box_a
 
-
+# Class containing all the events that take place in the night phase
 class Night:
+
     def __init__(self, ks, n_villagers, n_mafia, n_detectives, verbose):
         self.ks = ks
         self.verbose = verbose
@@ -11,6 +11,7 @@ class Night:
         self.n_mafia = n_mafia
         self.n_detectives = n_detectives
 
+    # Allows the mafia to kill another player
     def mafia_phase(self, kill_randomly = False):
         if self.verbose:
             print(
@@ -35,6 +36,7 @@ class Night:
 
         return voted_player
 
+    # Allows the detectives to secretly find out another player's role
     def detective_phase(self):
         if self.verbose:
             print("-------------------------------- Detective phase has started --------------------------------\n")

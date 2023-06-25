@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import argparse
 from plot import *
 
+# Runs a simulation of multiple runs of the game of Mafia
+# and returns results regarding win percentages and sociability
 def simulate_results(n_villagers, n_mafia, n_detectives, sim_runs):
    results = {
        "Random": {

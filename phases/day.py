@@ -3,12 +3,9 @@ from mlsolver.kripke import World, KripkeStructure
 from mlsolver.tableau import *
 from mlsolver.formula import *
 
-from mlsolver.formula import Atom, Box_a
-import matplotlib.pyplot as plt
-import networkx as nx
-
-
+# Class containing all the events that take place in the day phase
 class Day:
+    
     def __init__(self, ks, n_villagers, n_mafia, n_detectives, max_talking_rounds, verbose):
         self.verbose = verbose
         self.ks = ks
@@ -24,6 +21,7 @@ class Day:
         for i in range(self.max_talking_rounds):
             self.talking_round(i+1)
 
+    # Performs reasoning rules that involve talking on two agents
     def talking_rules(self, agent1, agent2):
         # If one of two talking agents is acting suspicious, the other will know
         if agent1.is_suspicious():
@@ -153,11 +151,15 @@ class Day:
                 if self.verbose:
                     print(player.role, "(agent", str(self.ks.players.index(player)+1) + ")",
                           "voted for: ", vote.role, "(agent", str(self.ks.players.index(vote)+1) + ")")
+                
+                # Add the agent's vote to the total votes
                 if vote in votes:
                     votes[vote] += 1
                 else:
                     votes[vote] = 1
         if self.verbose: print("\n")
+
+        # Determine the player to kill with the most votes
         max_votes = max(votes.values())
         removed_player = [player for player,
                           vote_count in votes.items() if vote_count == max_votes]
@@ -165,4 +167,6 @@ class Day:
         if len(removed_player) == 1:
             return removed_player[0]
         else:
+            # If there are 2 or more players with the max votes,
+            # pick randomly from those players
             return random.choice(removed_player)
