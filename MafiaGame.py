@@ -14,9 +14,10 @@ import random
 import numpy as np
 from MafiaKripkeStructure import MafiaKripkeStructure
 
-
+# Class containing every function needed to simulate the game of Mafia
 class MafiaGame:
-    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=2, visualize_ks=False, verbose=False):
+
+    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=1, visualize_ks=False, verbose=False):
         self.vizualize_ks = visualize_ks
         self.verbose = verbose
         self.ks = MafiaKripkeStructure(n_villagers, n_mafia, n_detective)
@@ -28,11 +29,11 @@ class MafiaGame:
                        n_detective, n_talking_rounds, verbose)
         self.night = Night(self.ks, n_villagers, n_mafia, n_detective, verbose)
 
+    # Determines the average sociability value of all players
     def get_avg_sociability(self):
         return np.mean([player.sociability for player in self.ks.players])
 
-    # Publicly announced that a player has been killed
-
+    # Publicly announces that a player has been killed
     def public_announcement_killed(self, killed_player):
         if self.verbose:
             print("Player", str(self.ks.players.index(killed_player)+1) + ",",
@@ -49,7 +50,6 @@ class MafiaGame:
             self.ks.model.solve_a(agent, formula)
 
     # Publicly announced that a player has been voted out
-
     def public_announcement_vote(self, voted_player):
         if self.verbose:
             print("Player", str(self.ks.players.index(voted_player)+1) + ",",
@@ -92,7 +92,7 @@ class MafiaGame:
         return self
 
     # Game loop
-    def start(self):
+    def start(self, kill_randomly = False, vote_randomly = False):
         n_v, n_d, n_m = self.count_roles()
         if self.verbose:
             print("In this game there are", n_v, "villagers,",
@@ -115,10 +115,10 @@ class MafiaGame:
                         self.update_detective_knowledge(
                             player, discovered_player)
                         if self.vizualize_ks:
-                            self.ks.visualize(str("Agent " + str(self.players.index(
-                                player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
+                            self.ks.visualize(str("Agent " + str(self.ks.players.index(
+                                player)+1) + " (detective) discovered the role of agent " + str(self.ks.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
 
-            killed_player = self.night.mafia_phase()
+            killed_player = self.night.mafia_phase(kill_randomly)
             killed_player.alive = False
 
             #Public announcement of the killed player
@@ -138,7 +138,7 @@ class MafiaGame:
             self.day.discussion_phase()
 
             #Voting
-            voted_player = self.day.voting_phase()
+            voted_player = self.day.voting_phase(vote_randomly)
             voted_player.alive = False
 
             #Public announcement of the voted player
@@ -156,6 +156,7 @@ class MafiaGame:
             finished = self.game_status(n_v, n_m, n_d)
         return finished
 
+    # Determines the number of players per role
     def count_roles(self):
         n_v, n_d, n_m = 0, 0, 0
         for player in self.ks.players:

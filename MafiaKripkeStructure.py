@@ -12,29 +12,35 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 
-
+# Class containing the Kripke structure used during the game of Mafia
 class MafiaKripkeStructure:
     def __init__(self, n_villagers, n_mafia, n_detective, sus_chance=0.1):
         self.sus_chance = sus_chance
         self.init_kripke_model(n_villagers, n_mafia, n_detective)
 
+    # Initializes the Kripke structure
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
         agents = [
             f'agent{i + 1}' for i in range(n_villagers + n_mafia + n_detective)]
         game_roles = ['v'] * n_villagers + \
             ['m'] * n_mafia + ['d'] * n_detective
+        
         # The true world is always the regular order of roles
         self.true_world = ''.join(game_roles)
-
         all_possible_roles = set(permutations(game_roles))
 
-        sus_worlds = self.init_sus_worlds(all_possible_roles)
+        # Initialize the players of the game
         self.players = self.create_sus_players(self.true_world)
+
+        # Initialize the worlds and relations of the Kripke structure
+        sus_worlds = self.init_sus_worlds(all_possible_roles)
         worlds = self.init_worlds(sus_worlds)
         relations = self.init_relations(worlds, agents)
 
+        # Create the Kripke structure
         self.model = KripkeStructure(worlds, relations)
 
+    # Creates a set of worlds with all possible combinations of agents being suspicious
     def init_sus_worlds(self, all_possible_roles):
         sus_worlds = []
         for world in all_possible_roles:
@@ -61,6 +67,7 @@ class MafiaKripkeStructure:
             self.true_world = ''.join(tuple(self.true_world))
         return sus_worlds
 
+    # Create players that can be suspicious
     def create_sus_players(self, true_world):
         # Determine which players are suspicious
         sus_indexes = [idx for idx, char in enumerate(
@@ -86,6 +93,7 @@ class MafiaKripkeStructure:
                 self.players.append(Detective(idx+1, suspicious))
         return self.players
 
+    # Creates the worlds for the Kripke structure
     def init_worlds(self, sus_worlds):
         worlds = []
         for roles in sus_worlds:
@@ -103,6 +111,7 @@ class MafiaKripkeStructure:
             worlds.append(world)
         return worlds
 
+    # Creates the relations for the Kripke structure
     def init_relations(self, worlds, agents):
         relations = {}
         for i, agent in enumerate(agents):
@@ -116,6 +125,7 @@ class MafiaKripkeStructure:
             relations[agent] = set(agent_relations)
         return relations
 
+    # Creates worlds with suspicions markings for a given world
     def apply_suspicion_markings(self, world, binary_worlds):
         current_sus_worlds = []
         for binary_world in binary_worlds:
@@ -128,8 +138,9 @@ class MafiaKripkeStructure:
             current_sus_worlds.append(tuple(sus_world))
         return current_sus_worlds
 
+    # Visualizes the worlds and relations of the Kripke structure
     def visualize(self, title):
-        """Visualizes the Kripke model worlds and relations."""
+        # Initialize a graph
         graph = nx.DiGraph()
 
         # Add nodes (worlds) to the graph

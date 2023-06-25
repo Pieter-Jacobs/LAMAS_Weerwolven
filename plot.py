@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+# Plots a grouped bar plot: sociability vs. win Percentage for each strategy
 def plot_sociability_box(results):
-    # Grouped bar plot: Sociability vs. Win Percentage for each strategy
     sociability_bins = np.arange(0.5, 1.0, 0.1)
     bin_labels = [f"{bin_start:.1f}-{bin_start+0.1:.1f}" for bin_start in sociability_bins]
 
@@ -39,12 +38,12 @@ def plot_sociability_box(results):
     plt.ylabel("Win Percentage (%)")
     plt.xticks(x + width / 2 + 0.05, bin_labels)  # Adjust the x-ticks position
     plt.legend()
-    plt.title("Sociability vs. Townfolk Win Percentage")
+    plt.title("Townfolk Win Percentage over differing Sociability")
 
     plt.savefig("img/sociability.png")
     plt.show()
 
-
+# Plots the win percentages of townfolk/mafia per strategy
 def plot_win_percentages(results):
     random_townfolk_wins = len(results["Random"]["Townfolk"])
     random_mafia_wins = len(results["Random"]["Mafia"])
@@ -87,8 +86,8 @@ def plot_win_percentages(results):
     ax.set_xlim(0, 100)
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["Random", "Logic"])
-    plt.xlabel("Win Percentage")
-    plt.title("Random vs. Logic Win Percentage")
+    plt.xlabel("Win Percentage (%)")
+    plt.title("Win Percentage of both factions across the different strategies")
 
     plt.savefig("img/wins.png")
     plt.show()
