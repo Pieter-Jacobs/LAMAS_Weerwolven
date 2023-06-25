@@ -115,8 +115,8 @@ class MafiaGame:
                         self.update_detective_knowledge(
                             player, discovered_player)
                         if self.vizualize_ks:
-                            self.ks.visualize(str("Agent " + str(self.players.index(
-                                player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
+                            self.ks.visualize(str("Agent " + str(self.ks.players.index(
+                                player)+1) + " (detective) discovered the role of agent " + str(self.ks.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
 
             killed_player = self.night.mafia_phase(kill_randomly)
             killed_player.alive = False
