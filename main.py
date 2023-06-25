@@ -4,26 +4,21 @@ from MafiaGame import MafiaGame
 def main():
    results = {
        "Random": {
-           "Mafia": 0,
-           "Townfolk": 0
+           "Mafia": [],
+           "Townfolk": []
        },
        "Logic": {
-           "Mafia": 0,
-           "Townfolk": 0,
+           "Mafia": [],
+           "Townfolk": []
        }
    }
-   avg_sociabilities = []
 
    for strategy in ["Random", "Logic"]:
-      sociability = []
       for run in range(2):
-            mafiaGame = MafiaGame(2, 1, 0, visualize_ks=True)
+            mafiaGame = MafiaGame(2, 1, 0, visualize_ks=False)
             result = mafiaGame.start()
-            results[strategy][result] += 1
-            sociability.append(mafiaGame.get_avg_sociability())
-      avg_sociabilities.append(sociability)
+            results[strategy][result].append(mafiaGame.get_avg_sociability()) 
    print(results)
-   print(avg_sociabilities)
 
 if __name__ == '__main__':
    main()

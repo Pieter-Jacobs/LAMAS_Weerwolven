@@ -27,9 +27,9 @@ class MafiaGame:
 
     def get_avg_sociability(self):
         return np.mean([player.sociability for player in self.ks.players])
-        
 
     # Publicly announced that a player has been killed
+
     def public_announcement_killed(self, killed_player):
         print("Player", str(self.ks.players.index(killed_player)+1) + ",",
               "who was a", killed_player.role + ",", "was killed by the mafia! \n")
@@ -84,15 +84,8 @@ class MafiaGame:
 
     # Game loop
     def start(self):
-        self.max_talking_rounds = 2
-        n_v, n_d, n_m = 0, 0, 0
-        for player in self.ks.players:
-            if player.role[0] == 'v':
-                n_v += 1
-            elif player.role[0] == 'd':
-                n_d += 1
-            else:
-                n_m += 1
+        n_v, n_d, n_m = self.count_roles()
+
         print("In this game there are", n_v, "villagers,",
               n_m, "mafia, and", n_d, "detective. \n")
 
@@ -112,17 +105,19 @@ class MafiaGame:
                         discovered_player = self.night.detective_phase()
                         self.update_detective_knowledge(
                             player, discovered_player)
-                        self.ks.visualize(str("Agent " + str(self.players.index(
-                            player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
-                        first_run = False
+                        if self.vizualize_ks:
+                            self.ks.visualize(str("Agent " + str(self.players.index(
+                                player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
 
             killed_player = self.night.mafia_phase()
             killed_player.alive = False
 
             #Public announcement of the killed player
             self.public_announcement_killed(killed_player)
-            self.ks.visualize(
-                f"Agent{killed_player.ID} ({killed_player.role}) was killed!")
+
+            if self.vizualize_ks:
+                self.ks.visualize(
+                    f"Agent{killed_player.ID} ({killed_player.role}) was killed!")
 
             if killed_player.role == "detective":
                 n_d -= 1
@@ -139,8 +134,9 @@ class MafiaGame:
 
             #Public announcement of the voted player
             self.public_announcement_vote(voted_player)
-            self.ks.visualize(str("Agent " + str(self.ks.players.index(voted_player)+1) +
-                              " (" + str(voted_player.role) + ")" + " was voted out!"))
+            if self.vizualize_ks:
+                self.ks.visualize(str("Agent " + str(self.ks.players.index(voted_player)+1) +
+                                      " (" + str(voted_player.role) + ")" + " was voted out!"))
 
             if voted_player.role == "detective":
                 n_d -= 1
@@ -150,3 +146,14 @@ class MafiaGame:
                 n_m -= 1
             finished = self.game_status(n_v, n_m, n_d)
         return finished
+
+    def count_roles(self):
+        n_v, n_d, n_m = 0, 0, 0
+        for player in self.ks.players:
+            if player.role[0] == 'v':
+                n_v += 1
+            elif player.role[0] == 'd':
+                n_d += 1
+            else:
+                n_m += 1
+        return n_v, n_d, n_m
