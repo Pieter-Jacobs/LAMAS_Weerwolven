@@ -16,7 +16,7 @@ import random
 class MafiaKripkeStructure:
     def __init__(self, n_villagers, n_mafia, n_detective):
         self.init_kripke_model(n_villagers, n_mafia, n_detective)
-    
+
     def init_kripke_model(self, n_villagers, n_mafia, n_detective):
         agents = [
             f'agent{i + 1}' for i in range(n_villagers + n_mafia + n_detective)]
@@ -34,10 +34,9 @@ class MafiaKripkeStructure:
         worlds = self.init_worlds(sus_worlds)
         relations = self.init_relations(worlds, agents)
 
-        self.ks = KripkeStructure(worlds, relations)
-        
+        self.model = KripkeStructure(worlds, relations)
+
         print("True world of this game: ", self.true_world)
- 
 
     def init_sus_worlds(self, all_possible_roles):
         sus_worlds = []
@@ -141,11 +140,11 @@ class MafiaKripkeStructure:
         graph = nx.DiGraph()
 
         # Add nodes (worlds) to the graph
-        for world in self.ks.worlds:
+        for world in self.model.worlds:
             graph.add_node(world.name)
 
         # Add edges (relations) to the graph
-        for agent, relations in self.ks.relations.items():
+        for agent, relations in self.model.relations.items():
             for relation in relations:
                 if relation in graph.edges:
                     current_labels = graph.edges[relation]['labels']

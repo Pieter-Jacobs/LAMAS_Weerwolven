@@ -15,30 +15,46 @@ from MafiaKripkeStructure import MafiaKripkeStructure
 
 
 class MafiaGame:
-    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_round=1, visualize_ks=False):
+    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=1, visualize_ks=False):
         self.vizualize_ks = visualize_ks
         self.ks = MafiaKripkeStructure(n_villagers, n_mafia, n_detective)
         if visualize_ks:
             self.ks.visualize("Initial Kripke Model")
-        self.day = Day(self.ks, self.ks.true_world, self.ks.players,
-                       n_villagers, n_mafia, n_detective, n_talking_round)
-        self.night = Night(self.ks, self.ks.true_world,
-                           self.ks.players, n_villagers, n_mafia, n_detective)
+        self.day = Day(self.ks, n_villagers, n_mafia,
+                       n_detective, n_talking_rounds)
+        self.night = Night(self.ks, n_villagers, n_mafia, n_detective)
 
     # Publicly announced that a player has been killed
-    def public_announcement_killed(self, ks, killed_player):
-        self.mafiaKripkeStructure.relations.pop(
-            "agent" + str(killed_player.get_ID()))
-        print("Player", str(self.players.index(killed_player)+1) + ",",
+    def public_announcement_killed(self, killed_player):
+        print("Player", str(self.ks.players.index(killed_player)+1) + ",",
               "who was a", killed_player.role + ",", "was killed by the mafia! \n")
-        return self.ks
+        formula = Atom(
+            killed_player.role[0] + str(killed_player.get_ID()))
+
+        # Remove relations of the killed player for better visualization
+        self.ks.model.relations.pop(
+            "agent" + str(killed_player.get_ID()))
+        
+        # Let everyone know the role of the killed player
+        for agent in self.ks.model.relations.keys():
+            self.ks.model.solve_a(agent, formula)
+
 
     # Publicly announced that a player has been voted out
-    def public_announcement_vote(self, ks, voted_player):
-        self.mafiaKripkeStructure.relations.pop(
-            "agent" + str(voted_player.get_ID()))
-        print("Player", str(self.players.index(voted_player)+1) + ",",
+
+    def public_announcement_vote(self, voted_player):
+        print("Player", str(self.ks.players.index(voted_player)+1) + ",",
               "who was a", voted_player.role + ",", "was voted out! \n")
+        formula = Atom(
+            voted_player.role[0] + str(voted_player.get_ID()))
+
+        # Remove relations of the killed player for better visualization
+        self.ks.model.relations.pop(
+            "agent" + str(voted_player.get_ID()))
+        
+        # Let everyone know the role of the killed player
+        for agent in self.ks.model.relations.keys():
+            self.ks.model.solve_a(agent, formula)
         return self.ks
 
     # Checks if the game is over or not
@@ -83,8 +99,7 @@ class MafiaGame:
         # Discussion phase
         self.day.discussion_phase()
         if self.vizualize_ks:
-            self.ks.visualize(
-                self.ks, self.ks.true_world, "Discussion phase")
+            self.ks.visualize("Discussion phase")
         while not finished:
             #Night phase
 
@@ -95,7 +110,7 @@ class MafiaGame:
                         discovered_player = self.night.detective_phase()
                         self.update_detective_knowledge(
                             player, discovered_player)
-                        self.visualize_kripke_model(self.ks, self.ks.true_world, str("Agent " + str(self.players.index(
+                        self.ks.visualize(str("Agent " + str(self.players.index(
                             player)+1) + " (detective) discovered the role of agent " + str(self.players.index(discovered_player)+1) + " (" + str(discovered_player.role)+")"))
                         first_run = False
 
@@ -103,9 +118,8 @@ class MafiaGame:
             killed_player.alive = False
 
             #Public announcement of the killed player
-            model = self.public_announcement_killed(self.ks, killed_player)
-            self.visualize_kripke_model(model, self.ks.true_world, str(
-                "Agent " + str(self.players.index(killed_player)+1) + " (" + str(killed_player.role) + ")" + " was killed!"))
+            self.public_announcement_killed(killed_player)
+            self.ks.visualize(f"Agent{killed_player.ID} ({killed_player.role}) was killed!")
 
             if killed_player.role == "detective":
                 n_d -= 1
@@ -121,9 +135,9 @@ class MafiaGame:
             voted_player.alive = False
 
             #Public announcement of the voted player
-            model = self.public_announcement_vote(model, voted_player)
-            self.visualize_kripke_model(model, self.ks.true_world, str(
-                "Agent " + str(self.players.index(voted_player)+1) + " (" + str(voted_player.role) + ")" + " was voted out!"))
+            self.public_announcement_vote(voted_player)
+            self.ks.visualize(str("Agent " + str(self.ks.players.index(voted_player)+1) +
+                              " (" + str(voted_player.role) + ")" + " was voted out!"))
 
             if voted_player.role == "detective":
                 n_d -= 1
