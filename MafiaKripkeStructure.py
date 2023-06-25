@@ -100,29 +100,20 @@ class MafiaKripkeStructure:
                     world.assignment[atom] = True
             worlds.append(world)
         return worlds
-
+    
     def init_relations(self, worlds, agents):
         relations = {}
         for i, agent in enumerate(agents):
             agent_relations = []
-            for j, world in enumerate(worlds):
+            for world in worlds:
                 agent_role = world.name.replace("*", "")[i]
-                for world_2 in worlds:
-                    agent2_role = world_2.name.replace("*", "")[i]
-                    if agent_role == agent2_role:
-                        if agent_role == "m":
-                            world_1_mafia = [
-                                i + 1 for i, x in enumerate(world.name.replace("*", "")) if x == "m"]
-                            world_2_mafia = [
-                                i + 1 for i, x in enumerate(world_2.name.replace("*", "")) if x == "m"]
-                            if sorted(world_1_mafia) == sorted(world_2_mafia):
-                                agent_relations.append(
-                                    (world.name, world_2.name))
-                        else:
-                            agent_relations.append((world.name, world_2.name))
+                agent_world_mafia = [
+                    j + 1 for j, role in enumerate(world.name.replace("*", "")) if role == "m"]
+                agent_relations.extend(
+                    [(world.name, w.name) for w in worlds if w.name.replace("*", "")[i] == agent_role and (agent_role != "m" or sorted(agent_world_mafia) == sorted([k + 1 for k, role in enumerate(w.name.replace("*", "")) if role == "m"]))])
             relations[agent] = set(agent_relations)
         return relations
-
+    
     def apply_suspicion_markings(self, world, binary_worlds):
         current_sus_worlds = []
         for binary_world in binary_worlds:

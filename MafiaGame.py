@@ -34,11 +34,10 @@ class MafiaGame:
         # Remove relations of the killed player for better visualization
         self.ks.model.relations.pop(
             "agent" + str(killed_player.get_ID()))
-        
+
         # Let everyone know the role of the killed player
         for agent in self.ks.model.relations.keys():
             self.ks.model.solve_a(agent, formula)
-
 
     # Publicly announced that a player has been voted out
 
@@ -51,7 +50,7 @@ class MafiaGame:
         # Remove relations of the killed player for better visualization
         self.ks.model.relations.pop(
             "agent" + str(voted_player.get_ID()))
-        
+
         # Let everyone know the role of the killed player
         for agent in self.ks.model.relations.keys():
             self.ks.model.solve_a(agent, formula)
@@ -119,7 +118,8 @@ class MafiaGame:
 
             #Public announcement of the killed player
             self.public_announcement_killed(killed_player)
-            self.ks.visualize(f"Agent{killed_player.ID} ({killed_player.role}) was killed!")
+            self.ks.visualize(
+                f"Agent{killed_player.ID} ({killed_player.role}) was killed!")
 
             if killed_player.role == "detective":
                 n_d -= 1
