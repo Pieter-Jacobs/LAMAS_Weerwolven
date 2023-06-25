@@ -11,6 +11,7 @@ from phases.night import Night
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
+import numpy as np
 from MafiaKripkeStructure import MafiaKripkeStructure
 
 
@@ -23,6 +24,10 @@ class MafiaGame:
         self.day = Day(self.ks, n_villagers, n_mafia,
                        n_detective, n_talking_rounds)
         self.night = Night(self.ks, n_villagers, n_mafia, n_detective)
+
+    def get_avg_sociability(self):
+        return np.mean([player.sociability for player in self.ks.players])
+        
 
     # Publicly announced that a player has been killed
     def public_announcement_killed(self, killed_player):

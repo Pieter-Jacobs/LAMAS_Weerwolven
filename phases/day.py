@@ -72,7 +72,7 @@ class Day:
             # Find talking partner
             talking_partner = None
             for partner in talking_partners:
-                if random.random() < starter.get_social() and random.random() < partner.get_social():
+                if random.random() < starter.sociability and random.random() < partner.sociability:
                     print("Agent " + str(starter.get_ID()) +
                           " talked with agent " + str(partner.get_ID()))
                     talking_partner = partner

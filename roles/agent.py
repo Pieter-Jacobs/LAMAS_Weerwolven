@@ -5,7 +5,7 @@ class Agent():
 
     def __init__(self, role, id, suspicious=False):
         self.knowledge = []
-        self.social = random.uniform(0.5, 1)
+        self.sociability = random.uniform(0.5, 1)
         self.suspicious = suspicious
         self.alive = True
         self.role = role
@@ -19,17 +19,14 @@ class Agent():
         if id not in self.talk_list:
             self.talk_list.append(id)
 
-    def set_social(self, social):
-        self.social = social
+    def set_sociability(self, sociability):
+        self.sociability = sociability
     
     def set_ID(self, ID):
         self.ID = ID
 
     def get_ID(self):
         return self.ID
-    
-    def get_social(self):
-        return self.social
     
     def is_suspicious(self):
         return self.suspicious
