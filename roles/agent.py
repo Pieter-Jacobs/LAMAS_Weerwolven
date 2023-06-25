@@ -5,7 +5,7 @@ class Agent():
 
     def __init__(self, role, id, suspicious=False):
         self.knowledge = []
-        self.social = random.uniform(0.5, 1)
+        self.social = random.uniform(0, 1)
         self.suspicious = suspicious
         self.alive = True
         self.role = role

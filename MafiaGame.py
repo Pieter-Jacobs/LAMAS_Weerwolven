@@ -192,7 +192,8 @@ class MafiaGame:
         idx = 1
         for agent in true_world:
             suspicious = False
-            if random.random() < 0.5:
+            print(random.random())
+            if random.random() < 0.25:
                 suspicious = True
 
             if agent == 'v':
