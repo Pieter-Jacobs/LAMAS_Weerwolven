@@ -17,3 +17,9 @@ python main.py [number of villagers] [number of mafia] [number of detectives] --
 ```
 
 More details about the used arguments can be found by running `python main.py -h`.
+
+## References
+- The 'mlsolver' library: https://github.com/erohkohl/mlsolver
+    - Used for creating Kripke structures and interacting with modal logic
+- The 'solve_a' function: https://github.com/JohnRoyale/MAS2018/blob/master/mlsolver/kripke.py#L36
+    - Used for simulating private announcements within a Kripke structure
