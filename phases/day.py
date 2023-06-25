@@ -4,8 +4,10 @@ from mlsolver.tableau import *
 from mlsolver.formula import *
 
 # Class containing all the events that take place in the day phase
+
+
 class Day:
-    
+
     def __init__(self, ks, n_villagers, n_mafia, n_detectives, max_talking_rounds, verbose):
         self.verbose = verbose
         self.ks = ks
@@ -75,7 +77,7 @@ class Day:
                 if random.random() < starter.sociability and random.random() < partner.sociability:
                     if self.verbose:
                         print("Agent " + str(starter.get_ID()) +
-                            " talked with agent " + str(partner.get_ID()))
+                              " talked with agent " + str(partner.get_ID()))
                     talking_partner = partner
                     talk_counter += 1
 
@@ -91,9 +93,10 @@ class Day:
             print("Nobody wanted to talk!")
 
     # Allows agents to vote based on their knowledge
-    def voting_phase(self, vote_randomly = False):
+    def voting_phase(self, vote_randomly=False):
         if self.verbose:
-            print("-------------------------------- Voting phase has started --------------------------------\n")
+            print(
+                "-------------------------------- Voting phase has started --------------------------------\n")
         votes = {}
         for player in self.ks.players:
             # Make sure the players who were removed can't vote
@@ -151,13 +154,14 @@ class Day:
                 if self.verbose:
                     print(player.role, "(agent", str(self.ks.players.index(player)+1) + ")",
                           "voted for: ", vote.role, "(agent", str(self.ks.players.index(vote)+1) + ")")
-                
+
                 # Add the agent's vote to the total votes
                 if vote in votes:
                     votes[vote] += 1
                 else:
                     votes[vote] = 1
-        if self.verbose: print("\n")
+        if self.verbose:
+            print("\n")
 
         # Determine the player to kill with the most votes
         max_votes = max(votes.values())

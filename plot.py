@@ -38,7 +38,7 @@ def plot_sociability_box(results):
     plt.ylabel("Win Percentage (%)")
     plt.xticks(x + width / 2 + 0.05, bin_labels)  # Adjust the x-ticks position
     plt.legend()
-    plt.title("Sociability vs. Townfolk Win Percentage")
+    plt.title("Townfolk Win Percentage over differing Sociability")
 
     plt.savefig("img/sociability.png")
     plt.show()
@@ -86,8 +86,8 @@ def plot_win_percentages(results):
     ax.set_xlim(0, 100)
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["Random", "Logic"])
-    plt.xlabel("Win Percentage")
-    plt.title("Random vs. Logic Win Percentage")
+    plt.xlabel("Win Percentage (%)")
+    plt.title("Win Percentage of both factions across the different strategies")
 
     plt.savefig("img/wins.png")
     plt.show()

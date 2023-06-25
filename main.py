@@ -18,8 +18,8 @@ def simulate_results(n_villagers, n_mafia, n_detectives, sim_runs):
    }
 
    for strategy in ["Random", "Logic"]:
-      for run in range(100):
-            mafiaGame = MafiaGame(1, 1, 1, visualize_ks=False, verbose=False)
+      for run in range(sim_runs):
+            mafiaGame = MafiaGame(n_villagers, n_mafia, n_detectives, visualize_ks=False, verbose=False)
             if strategy == "Random":
                 result = mafiaGame.start(True, True)
             elif strategy == "Logic":

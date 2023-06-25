@@ -17,7 +17,7 @@ from MafiaKripkeStructure import MafiaKripkeStructure
 # Class containing every function needed to simulate the game of Mafia
 class MafiaGame:
 
-    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=2, visualize_ks=False, verbose=False):
+    def __init__(self, n_villagers, n_mafia, n_detective, n_talking_rounds=1, visualize_ks=False, verbose=False):
         self.vizualize_ks = visualize_ks
         self.verbose = verbose
         self.ks = MafiaKripkeStructure(n_villagers, n_mafia, n_detective)
