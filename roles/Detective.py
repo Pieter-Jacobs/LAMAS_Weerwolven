@@ -1,16 +1,16 @@
 from roles.agent import Agent
+import random
 
 class Detective(Agent):
 
-    def __init__(self):
-        super().__init__("detective")
+    def __init__(self, id, suspicious):
+        super().__init__("detective", id, suspicious)
 
-    def inspect(self):
-        pass
-
-    def discuss(self):
-        print("blalbalblaa")
+    def get_ID(self):
+        return super().get_ID()
 
     def vote(self, players):
-        pass
+        eligible_playes = [p for p in players if p != self and p.alive == True]
+        random_player = random.choice(eligible_playes)
+        return random_player
     

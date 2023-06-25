@@ -1,17 +1,15 @@
 from roles.agent import Agent
+import random 
 
 class Villager(Agent):
-    def __init__(self):
-        super().__init__("villager")
+    def __init__(self, id, suspicious):
+        super().__init__("villager", id, suspicious)
 
-    def init_kripke_model(self):
-        """Builds the initial Kripke model world, where everyone can be any role"""
-        pass
+    def get_ID(self):
+        return super().get_ID()
     
-    # In here we can implement how the villagers are going to be communicating
-    def discuss(self):
-        print("blalbalblaa")
-
     def vote(self, players):
-        return(self)
+        eligible_playes = [p for p in players if p != self and p.alive == True]
+        random_player = random.choice(eligible_playes)
+        return random_player
 
