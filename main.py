@@ -15,9 +15,12 @@ def main():
    }
 
    for strategy in ["Random", "Logic"]:
-      for run in range(100):
+      for run in range(1000):
             mafiaGame = MafiaGame(1, 1, 1, visualize_ks=False, verbose=False)
-            result = mafiaGame.start()
+            if strategy == "Random":
+                result = mafiaGame.start(True, True)
+            elif strategy == "Logic":
+                result = mafiaGame.start()
             results[strategy][result].append(mafiaGame.get_avg_sociability()) 
 
    plot_sociability_box(results)

@@ -56,7 +56,6 @@ class Day:
                 self.ks.model.solve_a("agent" + str(agent1.get_ID()), formula)
 
     # Perform a talking round
-
     def talking_round(self, round):
         if self.verbose:
             print("--- Round " + str(round) + " ---")
@@ -94,7 +93,7 @@ class Day:
             print("Nobody wanted to talk!")
 
     # Allows agents to vote based on their knowledge
-    def voting_phase(self):
+    def voting_phase(self, vote_randomly = False):
         if self.verbose:
             print("-------------------------------- Voting phase has started --------------------------------\n")
         votes = {}
@@ -119,7 +118,7 @@ class Day:
                                 vote = agent
                                 break
                         # If no luck yet, pick randomly
-                        if vote == None:
+                        if vote == None or vote_randomly:
                             vote = random.choice([agent for agent in vote_players if agent.get_ID(
                             ) != player.get_ID() and agent.alive])
                 else:
@@ -146,7 +145,7 @@ class Day:
                                     vote = agent
                                     break
                         # If no luck yet, pick randomly
-                        if vote == None:
+                        if vote == None or vote_randomly:
                             vote = random.choice([agent for agent in vote_players if agent.get_ID(
                             ) != player.get_ID() and agent.alive])
                     pass

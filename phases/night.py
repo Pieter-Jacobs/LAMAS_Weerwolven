@@ -11,7 +11,7 @@ class Night:
         self.n_mafia = n_mafia
         self.n_detectives = n_detectives
 
-    def mafia_phase(self):
+    def mafia_phase(self, kill_randomly = False):
         if self.verbose:
             print(
                 "-------------------------------- Mafia phase has started --------------------------------\n")
@@ -30,7 +30,7 @@ class Night:
                     targets.append(player)
 
         voted_player = random.choice(killable_players)
-        if len(targets) != 0:
+        if len(targets) != 0 and not kill_randomly:
             voted_player = random.choice(targets)
 
         return voted_player
