@@ -62,14 +62,13 @@ class MafiaGame:
         print("Number of detective: ", n_d)
         print("Number of mafia: ", n_m, "\n")
         if n_m == 0:
-            print("Villagers won!")
-            exit()
+            print("Townfolk won!")
+            return "Townfolk"
         if n_m > (n_d + n_v):
             print("Mafia won!")
-            exit()
-        else:
-            print("Next round! \n")
-            return False
+            return "Mafia"
+        print("Next round! \n")
+        return False
 
     # Private announcement detective
     def update_detective_knowledge(self, agent, discovered_agent):
@@ -92,7 +91,6 @@ class MafiaGame:
         print("In this game there are", n_v, "villagers,",
               n_m, "mafia, and", n_d, "detective. \n")
 
-        result = None
         finished = False
 
         # Discussion phase
@@ -146,4 +144,4 @@ class MafiaGame:
             else:
                 n_m -= 1
             finished = self.game_status(n_v, n_m, n_d)
-        return result
+        return finished

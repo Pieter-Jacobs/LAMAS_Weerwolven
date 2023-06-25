@@ -100,7 +100,7 @@ class MafiaKripkeStructure:
                     world.assignment[atom] = True
             worlds.append(world)
         return worlds
-    
+
     def init_relations(self, worlds, agents):
         relations = {}
         for i, agent in enumerate(agents):
@@ -113,7 +113,7 @@ class MafiaKripkeStructure:
                     [(world.name, w.name) for w in worlds if w.name.replace("*", "")[i] == agent_role and (agent_role != "m" or sorted(agent_world_mafia) == sorted([k + 1 for k, role in enumerate(w.name.replace("*", "")) if role == "m"]))])
             relations[agent] = set(agent_relations)
         return relations
-    
+
     def apply_suspicion_markings(self, world, binary_worlds):
         current_sus_worlds = []
         for binary_world in binary_worlds:
